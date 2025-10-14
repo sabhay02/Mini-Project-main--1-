@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Public+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1173d4",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              display: ["Public Sans"],
+            },
+            borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+          },
+        },
+      };
+    </script>
+</head>
+<body class="font-display">
+<div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="flex h-full grow">
+<aside class="flex h-full min-h-screen w-80 flex-col justify-between bg-white dark:bg-background-dark p-4 border-r border-slate-200 dark:border-slate-800">
+<div class="flex flex-col gap-4">
+<h1 class="text-slate-900 dark:text-white text-lg font-bold leading-normal px-3">e-Gram Panchayat</h1>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary" href="#">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M224,115.55V208a16,16,0,0,1-16,16H168a16,16,0,0,1-16-16V168a8,8,0,0,0-8-8H112a8,8,0,0,0-8,8v40a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V115.55a16,16,0,0,1,5.17-11.78l80-75.48.11-.11a16,16,0,0,1,21.53,0,1.14,1.14,0,0,0,.11.11l80,75.48A16,16,0,0,1,224,115.55Z"></path>
+</svg>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary rounded-lg" href="#">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M216,40H136V24a8,8,0,0,0-16,0V40H40A16,16,0,0,0,24,56V176a16,16,0,0,0,16,16H79.36L57.75,219a8,8,0,0,0,12.5,10l29.59-37h56.32l29.59,37a8,8,0,1,0,12.5-10l-21.61-27H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,136H40V56H216V176ZM104,120v24a8,8,0,0,1-16,0V120a8,8,0,0,1,16,0Zm32-16v40a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm32-16v56a8,8,0,0,1-16,0V88a8,8,0,0,1,16,0Z"></path>
+</svg>
+<p class="text-sm font-medium leading-normal">Schemes</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary rounded-lg" href="#">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"></path>
+</svg>
+<p class="text-sm font-medium leading-normal">Applications</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary rounded-lg" href="#">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M240,120a48.05,48.05,0,0,0-48-48H152.2c-2.91-.17-53.62-3.74-101.91-44.24A16,16,0,0,0,24,40V200a16,16,0,0,0,26.29,12.25c37.77-31.68,77-40.76,93.71-43.3v31.72A16,16,0,0,0,151.12,214l11,7.33A16,16,0,0,0,186.5,212l11.77-44.36A48.07,48.07,0,0,0,240,120ZM40,199.93V40h0c42.81,35.91,86.63,45,104,47.24v65.48C126.65,155,82.84,164.07,40,199.93Zm131,8,0,.11-11-7.33V168h21.6ZM192,152H160V88h32a32,32,0,1,1,0,64Z"></path>
+</svg>
+<p class="text-sm font-medium leading-normal">Grievances</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary rounded-lg" href="#">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0v94.37L90.73,98a8,8,0,0,1,10.07-.38l58.81,44.11L218.73,90a8,8,0,1,1,10.54,12l-64,56a8,8,0,0,1-10.07.38L96.39,114.29,40,163.63V200H224A8,8,0,0,1,232,208Z"></path>
+</svg>
+<p class="text-sm font-medium leading-normal">Analytics</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary rounded-lg" href="#">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"></path>
+</svg>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</div>
+</aside>
+<main class="flex flex-col flex-1">
+<div class="p-6">
+<h1 class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">Dashboard</h1>
+</div>
+<div class="px-6 pb-6">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-4">Quick Actions</h2>
+<div class="flex gap-4">
+<button class="flex items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-wide">
+<span class="truncate">Add New Scheme</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold leading-normal tracking-wide">
+<span class="truncate">View All Schemes</span>
+</button>
+</div>
+</div>
+<div class="px-6 pb-6">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-4">Application Overview</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<p class="text-slate-600 dark:text-slate-400 text-base font-medium leading-normal">Total Applications</p>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">1250</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<p class="text-slate-600 dark:text-slate-400 text-base font-medium leading-normal">Pending Approval</p>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">350</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<p class="text-slate-600 dark:text-slate-400 text-base font-medium leading-normal">Approved</p>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">900</p>
+</div>
+</div>
+</div>
+<div class="px-6 pb-6">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-4">Recent Applications</h2>
+<div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<table class="w-full">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50">
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Applicant Name</th>
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Scheme</th>
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Status</th>
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Date Submitted</th>
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Priya Sharma</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Housing Scheme</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">Pending</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-20</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Arjun Verma</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Education Grant</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">Approved</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-18</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Divya Patel</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Agricultural Subsidy</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300">Rejected</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-15</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Rohan Singh</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Healthcare Assistance</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">Pending</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-12</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Meera Kapoor</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Skill Development Program</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">Approved</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-10</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="px-6 pb-6">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-4">Grievance Overview</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<p class="text-slate-600 dark:text-slate-400 text-base font-medium leading-normal">Total Grievances</p>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">500</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<p class="text-slate-600 dark:text-slate-400 text-base font-medium leading-normal">Open</p>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">150</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<p class="text-slate-600 dark:text-slate-400 text-base font-medium leading-normal">Resolved</p>
+<p class="text-slate-900 dark:text-white text-3xl font-bold leading-tight">350</p>
+</div>
+</div>
+</div>
+<div class="px-6 pb-6">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-4">Recent Grievances</h2>
+<div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<table class="w-full">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50">
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Complainant Name</th>
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Subject</th>
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Status</th>
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Date Submitted</th>
+<th class="px-4 py-3 text-left text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Vikram Joshi</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Water Supply Issue</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300">Open</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-22</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Sneha Reddy</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Road Repair Request</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">Resolved</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-20</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Karan Mehta</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Street Light Malfunction</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300">Open</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-18</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Anjali Rao</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Drainage Problem</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">Resolved</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-15</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+<tr class="border-t border-slate-200 dark:border-slate-800">
+<td class="h-[72px] px-4 py-2 text-slate-900 dark:text-white text-sm font-normal leading-normal">Rajesh Kumar</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">Garbage Collection Complaint</td>
+<td class="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+<span class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300">Open</span>
+</td>
+<td class="h-[72px] px-4 py-2 text-slate-600 dark:text-slate-400 text-sm font-normal leading-normal">2024-07-12</td>
+<td class="h-[72px] px-4 py-2 text-primary text-sm font-bold leading-normal tracking-wide"><a href="#">View</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>
