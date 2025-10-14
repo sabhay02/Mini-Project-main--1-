@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuthStore } from '../store/authStore';
@@ -8,11 +8,21 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading, isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const from = location.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'admin' || user.role === 'staff') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const {
     register,
@@ -24,7 +34,11 @@ const LoginPage = () => {
     const result = await login(data);
     if (result.success) {
       toast.success('Login successful!');
-      navigate(from, { replace: true });
+      if (result.user.role === 'admin' || result.user.role === 'staff') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     } else {
       toast.error(result.message);
     }

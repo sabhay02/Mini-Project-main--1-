@@ -13,8 +13,8 @@ const {
 
 // @desc    Get user's grievances
 // @route   GET /api/grievances
-// @access  Private
-router.get('/', protect, validatePagination, async (req, res) => {
+// @access  Private (Citizen only)
+router.get('/', protect, authorize('citizen'), validatePagination, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -70,8 +70,8 @@ router.get('/', protect, validatePagination, async (req, res) => {
 
 // @desc    Get single grievance
 // @route   GET /api/grievances/:id
-// @access  Private
-router.get('/:id', protect, validateId, checkResourceAccess('grievance'), async (req, res) => {
+// @access  Private (Citizen only)
+router.get('/:id', protect, authorize('citizen'), validateId, checkResourceAccess('grievance'), async (req, res) => {
   try {
     const grievance = await Grievance.findById(req.params.id)
       .populate('user', 'name email phone')
@@ -103,8 +103,8 @@ router.get('/:id', protect, validateId, checkResourceAccess('grievance'), async 
 
 // @desc    Submit new grievance
 // @route   POST /api/grievances
-// @access  Private
-router.post('/', protect, requireVerification, sanitizeInput, validateGrievanceSubmission, async (req, res) => {
+// @access  Private (Citizen only)
+router.post('/', protect, authorize('citizen'), requireVerification, sanitizeInput, validateGrievanceSubmission, async (req, res) => {
   try {
     const grievanceData = {
       ...req.body,

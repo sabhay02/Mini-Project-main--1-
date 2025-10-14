@@ -13,8 +13,8 @@ const {
 
 // @desc    Get user's applications
 // @route   GET /api/applications
-// @access  Private
-router.get('/', protect, validatePagination, async (req, res) => {
+// @access  Private (Citizen only)
+router.get('/', protect, authorize('citizen'), validatePagination, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -65,8 +65,8 @@ router.get('/', protect, validatePagination, async (req, res) => {
 
 // @desc    Get single application
 // @route   GET /api/applications/:id
-// @access  Private
-router.get('/:id', protect, validateId, checkResourceAccess('application'), async (req, res) => {
+// @access  Private (Citizen only)
+router.get('/:id', protect, authorize('citizen'), validateId, checkResourceAccess('application'), async (req, res) => {
   try {
     const application = await Application.findById(req.params.id)
       .populate('user', 'name email phone')
@@ -98,8 +98,8 @@ router.get('/:id', protect, validateId, checkResourceAccess('application'), asyn
 
 // @desc    Submit new application
 // @route   POST /api/applications
-// @access  Private
-router.post('/', protect, sanitizeInput, validateApplicationSubmission, async (req, res) => {
+// @access  Private (Citizen only)
+router.post('/', protect, authorize('citizen'), sanitizeInput, validateApplicationSubmission, async (req, res) => {
   try {
     const applicationData = {
       ...req.body,

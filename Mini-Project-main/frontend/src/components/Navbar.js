@@ -162,31 +162,34 @@ const Navbar = () => {
                       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name}</p>
                         <p className="text-xs text-gray-600 dark:text-gray-400">{user?.email}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 capitalize">{user?.role}</p>
                       </div>
-                      
-                      {userMenuItems.map((item) => (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <item.icon className="w-4 h-4 mr-3" />
-                          {item.label}
-                        </Link>
-                      ))}
-                      
-                      {user?.role === 'admin' && adminMenuItems.map((item) => (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border-t border-gray-200 dark:border-gray-700"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <item.icon className="w-4 h-4 mr-3" />
-                          {item.label}
-                        </Link>
-                      ))}
+
+                      {(user?.role === 'admin' || user?.role === 'staff') ? (
+                        adminMenuItems.map((item) => (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            onClick={() => setIsProfileOpen(false)}
+                          >
+                            <item.icon className="w-4 h-4 mr-3" />
+                            {item.label}
+                          </Link>
+                        ))
+                      ) : (
+                        userMenuItems.map((item) => (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            onClick={() => setIsProfileOpen(false)}
+                          >
+                            <item.icon className="w-4 h-4 mr-3" />
+                            {item.label}
+                          </Link>
+                        ))
+                      )}
                       
                       <button
                         onClick={handleLogout}

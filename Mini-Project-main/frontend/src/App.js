@@ -77,47 +77,47 @@ function App() {
           
           {/* Protected User Routes */}
           <Route path="/dashboard" element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="citizen">
               <DashboardPage />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/applications" element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="citizen">
               <ApplicationsPage />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/applications/new" element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="citizen">
               <ApplicationFormPage />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/applications/:id" element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="citizen">
               <ApplicationDetailPage />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/grievances" element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="citizen">
               <GrievancesPage />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/grievances/new" element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="citizen">
               <GrievanceFormPage />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/grievances/:id" element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="citizen">
               <GrievanceDetailPage />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/profile" element={
             <ProtectedRoute>
               <ProfilePage />

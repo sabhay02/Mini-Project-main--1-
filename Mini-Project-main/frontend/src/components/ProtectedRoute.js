@@ -24,10 +24,14 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   // Check role-based access
   if (requiredRole) {
     const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    
+
     if (!roles.includes(user?.role)) {
-      // Redirect to dashboard if user doesn't have required role
-      return <Navigate to="/dashboard" replace />;
+      // Redirect based on user role
+      if (user?.role === 'admin' || user?.role === 'staff') {
+        return <Navigate to="/admin" replace />;
+      } else {
+        return <Navigate to="/dashboard" replace />;
+      }
     }
   }
 
