@@ -1,15 +1,15 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Application = require('../models/Application');
-const User = require('../models/User');
-const { protect, authorize, checkResourceAccess, requireVerification } = require('../middleware/auth');
-const {
-  validateApplicationSubmission,
-  validateId,
-  validatePagination,
-  validateStatusUpdate,
-  sanitizeInput
-} = require('../middleware/validation');
+import Application from '../models/Application.js';
+import User from '../models/User.js';
+import { protect, authorize, checkResourceAccess } from '../middleware/auth.js';
+import {
+  validateApplicationSubmission,
+  validateId,
+  validatePagination,
+  validateStatusUpdate,
+  sanitizeInput
+} from '../middleware/validation.js';
 
 // @desc    Get user's applications
 // @route   GET /api/applications
@@ -429,4 +429,4 @@ router.get('/stats/overview', protect, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

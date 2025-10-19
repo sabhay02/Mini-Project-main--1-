@@ -1,13 +1,13 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Scheme = require('../models/Scheme');
-const { protect, optionalAuth } = require('../middleware/auth');
-const {
-  validateSchemeSearch,
-  validateId,
-  validatePagination,
-  sanitizeInput
-} = require('../middleware/validation');
+import Scheme from '../models/Scheme.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
+import {
+  validateSchemeSearch,
+  validateId,
+  validatePagination,
+  sanitizeInput
+} from '../middleware/validation.js';
 
 // @desc    Get all schemes
 // @route   GET /api/schemes
@@ -384,4 +384,4 @@ router.get('/stats/overview', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

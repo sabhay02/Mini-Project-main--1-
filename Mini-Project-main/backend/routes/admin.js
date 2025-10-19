@@ -1,18 +1,18 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Application = require('../models/Application');
-const Grievance = require('../models/Grievance');
-const User = require('../models/User');
-const Scheme = require('../models/Scheme');
-const Announcement = require('../models/Announcement');
-const Service = require('../models/Service');
-const { protect, authorize } = require('../middleware/auth');
-const {
-  validateId,
-  validatePagination,
-  validateStatusUpdate,
-  sanitizeInput
-} = require('../middleware/validation');
+import Application from '../models/Application.js';
+import Grievance from '../models/Grievance.js';
+import User from '../models/User.js';
+import Scheme from '../models/Scheme.js';
+import Announcement from '../models/Announcement.js';
+import Service from '../models/Service.js';
+import { protect, authorize } from '../middleware/auth.js';
+import {
+  validateId,
+  validatePagination,
+  validateStatusUpdate,
+  sanitizeInput
+} from '../middleware/validation.js';
 
 // @desc    Get admin dashboard statistics
 // @route   GET /api/admin/dashboard
@@ -1048,4 +1048,4 @@ router.delete('/announcements/:id', protect, authorize('admin', 'staff'), valida
   }
 });
 
-module.exports = router;
+export default router;

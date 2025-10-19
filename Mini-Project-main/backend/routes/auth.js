@@ -1,14 +1,12 @@
 import express, { Router } from 'express';
 import User from '../models/User.js'; // NOTE: Requires .js extension on import
 import { 
-    protect, 
-    requireVerification 
+    protect
 } from '../middleware/auth.js'; // NOTE: Requires .js extension on import
 import {
-  validateUserRegistration,
-  validateUserLogin,
-  validateOTP,
-  sanitizeInput
+  validateUserRegistration,
+  validateUserLogin,
+  sanitizeInput
 } from '../middleware/validation.js'; // NOTE: Requires .js extension on import
 
 const router = Router();
@@ -18,12 +16,7 @@ const router = Router();
 // @access  Public
 router.post('/register', sanitizeInput, validateUserRegistration, async (req, res) => {
   try {
-    // CORRECTION from previous turn: Parse address string for model consistency
-    const { name, email, phone, password, address: addressString, aadhaarNumber } = req.body;
-    
-    const address = addressString 
-        ? { village: addressString, district: 'Unknown', state: 'Unknown', pincode: '000000' }
-        : {}; 
+    const { name, email, phone, password, confirmPassword, address, aadhaarNumber } = req.body; 
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -39,32 +32,28 @@ router.post('/register', sanitizeInput, validateUserRegistration, async (req, re
       });
     }
 
-    // Create user
-    const user = await User.create({
-      name,
-      email,
-      phone,
-      password,
-      address, // Use the parsed address object
-      aadhaarNumber
-    });
+    // Create user (automatically verified)
+    const user = await User.create({
+      name,
+      email,
+      phone,
+      password,
+      address,
+      aadhaarNumber,
+      isVerified: true
+    });
 
-    // Generate OTP for verification
-    const otp = user.generateOTP();
-    await user.save();
+    // Generate JWT token for immediate login
+    const token = user.generateAuthToken();
 
-    // In a real application, you would send OTP via SMS/Email
-    console.log(`OTP for ${phone}: ${otp}`);
-
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully. Please verify with OTP.',
-      data: {
-        userId: user._id,
-        phone: user.phone,
-        email: user.email
-      }
-    });
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully.',
+      data: {
+        token,
+        user: user.toJSON()
+      }
+    });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({
@@ -75,113 +64,6 @@ router.post('/register', sanitizeInput, validateUserRegistration, async (req, re
   }
 });
 
-// @desc    Send OTP
-// @route   POST /api/auth/send-otp
-// @access  Public
-router.post('/send-otp', sanitizeInput, async (req, res) => {
-  try {
-    const { phone, email } = req.body;
-
-    if (!phone && !email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Phone number or email is required'
-      });
-    }
-
-    let user;
-    if (phone) {
-      user = await User.findOne({ phone });
-    } else {
-      user = await User.findOne({ email });
-    }
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    // Generate OTP
-    const otp = user.generateOTP();
-    await user.save();
-
-    // In a real application, you would send OTP via SMS/Email
-    console.log(`OTP for ${phone || email}: ${otp}`);
-
-    res.json({
-      success: true,
-      message: 'OTP sent successfully',
-      data: {
-        phone: phone || user.phone,
-        email: email || user.email
-      }
-    });
-  } catch (error) {
-    console.error('Send OTP error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to send OTP',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-    });
-  }
-});
-
-// @desc    Verify OTP
-// @route   POST /api/auth/verify-otp
-// @access  Public
-router.post('/verify-otp', sanitizeInput, validateOTP, async (req, res) => {
-  try {
-    const { phone, email, otp } = req.body;
-
-    let user;
-    if (phone) {
-      user = await User.findOne({ phone });
-    } else {
-      user = await User.findOne({ email });
-    }
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    // Verify OTP
-    if (!user.verifyOTP(otp)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid or expired OTP'
-      });
-    }
-
-    // Mark user as verified and clear OTP
-    user.isVerified = true;
-    user.otp = undefined;
-    await user.save();
-
-    // Generate JWT token
-    const token = user.generateAuthToken();
-
-    res.json({
-      success: true,
-      message: 'OTP verified successfully',
-      data: {
-        token,
-        user: user.toJSON()
-      }
-    });
-  } catch (error) {
-    console.error('Verify OTP error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'OTP verification failed',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-    });
-  }
-});
 
 // @desc    Login user
 // @route   POST /api/auth/login
@@ -207,13 +89,6 @@ router.post('/login', sanitizeInput, validateUserLogin, async (req, res) => {
       });
     }
 
-    // Ensure user is verified before allowing login
-    if (!user.isVerified) {
-        return res.status(403).json({
-          success: false,
-          message: 'Account not verified. Please verify your account with the OTP.'
-        });
-    }
 
     const isPasswordValid = await user.comparePassword(password);
     console.log('Password valid:', isPasswordValid);

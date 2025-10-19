@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Helper function to generate a unique ID portion (safer than relying on count)
 function generateUniqueIdPortion(prefix) {
@@ -220,4 +220,4 @@ applicationSchema.methods.addReviewComment = function(reviewerId, comment, statu
   }
 };
 
-module.exports = mongoose.model('Application', applicationSchema);
+export default mongoose.model('Application', applicationSchema);

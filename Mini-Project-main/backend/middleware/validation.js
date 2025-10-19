@@ -1,4 +1,4 @@
-const { body, param, query, validationResult } = require('express-validator');
+import { body, param, query, validationResult } from 'express-validator';
 
 // Handle validation errors
 const handleValidationErrors = (req, res, next) => {
@@ -41,6 +41,11 @@ const validateUserRegistration = [
       return true;
     }),
   
+  body('address')
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Address must be between 10 and 500 characters'),
+  
   handleValidationErrors
 ];
 
@@ -58,19 +63,6 @@ const validateUserLogin = [
   handleValidationErrors
 ];
 
-// OTP validation
-const validateOTP = [
-  body('phone')
-    .matches(/^[6-9]\d{9}$/)
-    .withMessage('Please provide a valid 10-digit phone number'),
-  
-  body('otp')
-    .isLength({ min: 4, max: 6 })
-    .isNumeric()
-    .withMessage('OTP must be 4-6 digits'),
-  
-  handleValidationErrors
-];
 
 // Application submission validation
 const validateApplicationSubmission = [
@@ -365,11 +357,10 @@ const sanitizeInput = (req, res, next) => {
   next();
 };
 
-module.exports = {
+export {
   handleValidationErrors,
   validateUserRegistration,
   validateUserLogin,
-  validateOTP,
   validateApplicationSubmission,
   validateGrievanceSubmission,
   validateSchemeSearch,

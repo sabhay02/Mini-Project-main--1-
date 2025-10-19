@@ -52,18 +52,21 @@ const RegisterPage = () => {
     getValues // Added getValues to retrieve password for custom validation
   } = useForm();
 
-  const onRegisterSubmit = async (data) => {
-    // Destructure data to match backend expectation, especially if we treat 'address' as a temporary placeholder
-    const { confirmPassword, ...registrationData } = data;
-    
-    const result = await registerAuth(registrationData);
-    if (result.success) {
-      toast.success(result.message || 'Registration successful! Please verify with OTP.');
-      navigate('/login'); // Redirect to login/verification page
-    } else {
-      toast.error(result.message || 'Registration failed.');
-    }
-  };
+  const onRegisterSubmit = async (data) => {
+    // Send all form data including confirmPassword for backend validation
+    const result = await registerAuth(data);
+    if (result.success) {
+      toast.success(result.message || 'Registration successful! Welcome!');
+      // User is automatically logged in, redirect to dashboard
+      if (result.user.role === 'admin' || result.user.role === 'staff') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    } else {
+      toast.error(result.message || 'Registration failed.');
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 font-inter">
@@ -123,13 +126,13 @@ const RegisterPage = () => {
                 Email Address
               </label>
               <input
-                {...formRegister('email', {
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^\S+@\S+\.\S+$/i,
-                    message: 'Invalid email address'
-                  }
-                })}
+                {...formRegister('email', {
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email address'
+                  }
+                })}
                 type="email"
                 autoComplete="email"
                 className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 ${PRIMARY_COLOR_CLASS.split(' ')[2]} focus:border-blue-500 dark:bg-gray-700 dark:text-white transition duration-150`}
@@ -145,13 +148,13 @@ const RegisterPage = () => {
                 Phone Number
               </label>
               <input
-                {...formRegister('phone', {
-                  required: 'Phone number is required',
-                  pattern: {
-                    value: /^[6-9]\d{9}$/,
-                    message: 'Please enter a valid 10-digit phone number'
-                  }
-                })}
+                {...formRegister('phone', {
+                  required: 'Phone number is required',
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: 'Please enter a valid 10-digit phone number starting with 6-9'
+                  }
+                })}
                 type="tel"
                 autoComplete="tel"
                 className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 ${PRIMARY_COLOR_CLASS.split(' ')[2]} focus:border-blue-500 dark:bg-gray-700 dark:text-white transition duration-150`}
@@ -197,26 +200,25 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {/* 🌟 CORRECTION: Added missing Confirm Password field for frontend validation */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Confirm Password
-              </label>
-              <input
-                {...formRegister('confirmPassword', {
-                  required: 'Confirmation is required',
-                  validate: value =>
-                    value === getValues('password') || 'Passwords must match'
-                  })}
-                  type="password"
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Confirm Password
+              </label>
+              <input
+                {...formRegister('confirmPassword', {
+                  required: 'Confirmation is required',
+                  validate: value =>
+                    value === getValues('password') || 'Passwords must match'
+                })}
+                type="password"
                 autoComplete="new-password"
-                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 ${PRIMARY_COLOR_CLASS.split(' ')[2]} focus:border-blue-500 dark:bg-gray-700 dark:text-white transition duration-150`}
-                  placeholder="Confirm your password"
-                />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
-              )}
-            </div>
+                className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 ${PRIMARY_COLOR_CLASS.split(' ')[2]} focus:border-blue-500 dark:bg-gray-700 dark:text-white transition duration-150`}
+                placeholder="Confirm your password"
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
+              )}
+            </div>
 
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

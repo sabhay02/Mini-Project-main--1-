@@ -102,74 +102,58 @@ export const useAuthStore = create(
           });
           
           return { success: true, data: response.data, user };
-        } catch (error) {
-          set({ isLoading: false });
-          return {
-            success: false,
-            message: error.response?.data?.message || 'Login failed',
-          };
-        }
+        } catch (error) {
+          set({ isLoading: false });
+          
+          // Provide more specific error messages
+          if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+            return {
+              success: false,
+              message: 'Unable to connect to server. Please check if the backend is running.',
+            };
+          }
+          
+          return {
+            success: false,
+            message: error.response?.data?.message || 'Login failed',
+          };
+        }
       },
 
-      register: async (userData) => {
-        try {
-          set({ isLoading: true });
-          
-          const response = await api.post('/auth/register', userData);
-          
-          set({ isLoading: false });
-          return { success: true, data: response.data };
-        } catch (error) {
-          set({ isLoading: false });
-          return {
-            success: false,
-            message: error.response?.data?.message || 'Registration failed',
-          };
-        }
-      },
+      register: async (userData) => {
+        try {
+          set({ isLoading: true });
+          
+          const response = await api.post('/auth/register', userData);
+          const { token, user } = response.data.data;
+          
+          // Automatically log in user after successful registration
+          set({
+            user,
+            token,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          
+          return { success: true, data: response.data, user };
+        } catch (error) {
+          set({ isLoading: false });
+          
+          // Provide more specific error messages
+          if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+            return {
+              success: false,
+              message: 'Unable to connect to server. Please check if the backend is running.',
+            };
+          }
+          
+          return {
+            success: false,
+            message: error.response?.data?.message || 'Registration failed',
+          };
+        }
+      },
 
-      sendOTP: async (phoneOrEmail) => {
-        try {
-          set({ isLoading: true });
-          
-          const response = await api.post('/auth/send-otp', phoneOrEmail);
-          
-          set({ isLoading: false });
-          return { success: true, data: response.data };
-        } catch (error) {
-          set({ isLoading: false });
-          return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to send OTP',
-          };
-        }
-      },
-
-      verifyOTP: async (otpData) => {
-        try {
-          set({ isLoading: true });
-          
-          const response = await api.post('/auth/verify-otp', otpData);
-          const { token, user } = response.data.data;
-          
-          // 🌟 CORRECTION: Removed manual localStorage.setItem calls
-          
-          set({
-            user,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-          
-          return { success: true, data: response.data };
-        } catch (error) {
-          set({ isLoading: false });
-          return {
-            success: false,
-            message: error.response?.data?.message || 'OTP verification failed',
-          };
-        }
-      },
 
       // If `skipApi` is true, skips the API call and just clears local state (used by interceptor)
       logout: async (skipApi = false) => {
@@ -234,43 +218,53 @@ export const useAuthStore = create(
         }
       },
 
-      checkAuth: async () => {
-        // Rely on persisted state being loaded initially by middleware
-        const token = get().token;
-        const user = get().user;
-        
-        if (token && user) {
-          try {
-            set({ isLoading: true });
-            
-            // Verify token with backend
-            const response = await api.get('/auth/me');
-            const { user: userData } = response.data.data;
-            
-            set({
-              user: userData,
-              isAuthenticated: true,
-              isLoading: false,
-            });
-          } catch (error) {
-            // Token is invalid - clear everything
-            set({
-              user: null,
-              token: null,
-              isAuthenticated: false,
-              isLoading: false,
-            });
-          }
-        } else {
-          // No token or user data - ensure clean state
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
-        }
-      },
+      checkAuth: async () => {
+        // Rely on persisted state being loaded initially by middleware
+        const token = get().token;
+        const user = get().user;
+        
+        if (token && user) {
+          try {
+            set({ isLoading: true });
+            
+            // Verify token with backend
+            const response = await api.get('/auth/me');
+            const { user: userData } = response.data.data;
+            
+            set({
+              user: userData,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } catch (error) {
+            console.log('Auth check failed:', error.message);
+            
+            // Only clear auth state if it's a 401 (unauthorized) error
+            // For network errors, keep the user logged in locally
+            if (error.response?.status === 401) {
+              set({
+                user: null,
+                token: null,
+                isAuthenticated: false,
+                isLoading: false,
+              });
+            } else {
+              // For network errors, keep user logged in but set loading to false
+              set({
+                isLoading: false,
+              });
+            }
+          }
+        } else {
+          // No token or user data - ensure clean state
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
+      },
 
       refreshUser: async () => {
         try {

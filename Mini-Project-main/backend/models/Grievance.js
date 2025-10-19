@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Helper function to generate a unique ID portion (safer than relying on count)
 function generateUniqueIdPortion(prefix) {
@@ -292,4 +292,4 @@ grievanceSchema.methods.addFeedback = function(rating, comment) {
   }
 };
 
-module.exports = mongoose.model('Grievance', grievanceSchema);
+export default mongoose.model('Grievance', grievanceSchema);

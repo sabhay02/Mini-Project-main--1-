@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Helper function to generate a unique ID portion (safer than relying on count)
 function generateUniqueIdPortion(prefix) {
@@ -346,4 +346,4 @@ announcementSchema.statics.getRecent = function(limit = 10, category = null) {
   .limit(limit);
 };
 
-module.exports = mongoose.model('Announcement', announcementSchema);
+export default mongoose.model('Announcement', announcementSchema);

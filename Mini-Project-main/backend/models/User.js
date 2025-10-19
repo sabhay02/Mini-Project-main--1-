@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please provide an email'],
     unique: true,
     lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
+    match: [/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, 'Please provide a valid email']
   },
   phone: {
     type: String,
@@ -33,22 +33,14 @@ const userSchema = new mongoose.Schema({
     enum: ['citizen', 'admin', 'staff'],
     default: 'citizen'
   },
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
-  verificationToken: String,
-  verificationExpires: Date,
-  otp: {
-    code: String,
-    expires: Date
-  },
-  address: {
-    village: String, // String type naturally allows null/undefined if not explicitly set
-    district: String,
-    state: String,
-    pincode: String
-  },
+  isVerified: {
+    type: Boolean,
+    default: true
+  },
+  address: {
+    type: String,
+    required: [true, 'Please provide an address']
+  },
   aadhaarNumber: {
     type: String,
     match: [/^\d{12}$/, 'Please provide a valid 12-digit Aadhaar number']
@@ -114,38 +106,12 @@ userSchema.methods.generateAuthToken = function() {
   );
 };
 
-// Generate OTP
-userSchema.methods.generateOTP = function() {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  this.otp = {
-    code: otp,
-    expires: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
-  };
-  return otp;
-};
-
-// Verify OTP
-userSchema.methods.verifyOTP = function(otp) {
-  if (!this.otp || !this.otp.code || !this.otp.expires) {
-    return false;
-  }
-  
-  // Check expiry by converting dates to numeric timestamps
-  if (this.otp.expires.getTime() < new Date().getTime()) {
-    return false;
-  }
-  
-  return this.otp.code === otp;
-};
 
 // Remove sensitive data from JSON output
 userSchema.methods.toJSON = function() {
-  const user = this.toObject();
-  delete user.password;
-  delete user.otp;
-  delete user.verificationToken;
-  delete user.verificationExpires; 
-  return user;
+  const user = this.toObject();
+  delete user.password;
+  return user;
 };
 
 // 🌟 ES Module export

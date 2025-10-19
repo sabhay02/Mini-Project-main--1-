@@ -1,12 +1,12 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Service = require('../models/Service');
-const { protect, optionalAuth } = require('../middleware/auth');
-const {
-  validateId,
-  validatePagination,
-  sanitizeInput
-} = require('../middleware/validation');
+import Service from '../models/Service.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
+import {
+  validateId,
+  validatePagination,
+  sanitizeInput
+} from '../middleware/validation.js';
 
 // @desc    Get all services
 // @route   GET /api/services
@@ -378,4 +378,4 @@ router.get('/stats/overview', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

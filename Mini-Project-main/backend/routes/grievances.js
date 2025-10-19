@@ -1,15 +1,15 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Grievance = require('../models/Grievance');
-const User = require('../models/User');
-const { protect, authorize, checkResourceAccess, requireVerification } = require('../middleware/auth');
-const {
+import Grievance from '../models/Grievance.js';
+import User from '../models/User.js';
+import { protect, authorize, checkResourceAccess } from '../middleware/auth.js';
+import {
   validateGrievanceSubmission,
   validateId,
   validatePagination,
   validateStatusUpdate,
   sanitizeInput
-} = require('../middleware/validation');
+} from '../middleware/validation.js';
 
 // @desc    Get user's grievances
 // @route   GET /api/grievances
@@ -104,7 +104,7 @@ router.get('/:id', protect, authorize('citizen'), validateId, checkResourceAcces
 // @desc    Submit new grievance
 // @route   POST /api/grievances
 // @access  Private (Citizen only)
-router.post('/', protect, authorize('citizen'), requireVerification, sanitizeInput, validateGrievanceSubmission, async (req, res) => {
+router.post('/', protect, authorize('citizen'), sanitizeInput, validateGrievanceSubmission, async (req, res) => {
   try {
     const grievanceData = {
       ...req.body,
@@ -487,4 +487,4 @@ router.get('/stats/overview', protect, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

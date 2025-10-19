@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Helper function to generate a simple unique ID (used for serviceId)
 function generateUniqueId(prefix = 'SVC') {
@@ -286,4 +286,4 @@ serviceSchema.methods.toJSON = function() {
   return service;
 };
 
-module.exports = mongoose.model('Service', serviceSchema);
+export default mongoose.model('Service', serviceSchema);

@@ -1,18 +1,18 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const User = require('../models/User');
-const { protect, authorize } = require('../middleware/auth');
-const {
-  validateId,
-  validatePagination,
-  sanitizeInput
-} = require('../middleware/validation');
+import User from '../models/User.js';
+import { protect, authorize } from '../middleware/auth.js';
+import {
+  validateId,
+  validatePagination,
+  sanitizeInput
+} from '../middleware/validation.js';
 
 // NOTE: It is better practice to import dependent models once at the top 
 // rather than requiring them inside route handlers, though the latter works.
 // Assuming Application and Grievance models exist in the correct paths:
-const Application = require('../models/Application');
-const Grievance = require('../models/Grievance');
+import Application from '../models/Application.js';
+import Grievance from '../models/Grievance.js';
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
@@ -456,4 +456,4 @@ router.get('/:id/grievances', protect, authorize('admin', 'staff'), validateId, 
   }
 });
 
-module.exports = router;
+export default router;

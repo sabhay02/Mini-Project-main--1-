@@ -1,13 +1,13 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Announcement = require('../models/Announcement');
-const { protect, authorize, optionalAuth } = require('../middleware/auth');
-const {
-  validateAnnouncement,
-  validateId,
-  validatePagination,
-  sanitizeInput
-} = require('../middleware/validation');
+import Announcement from '../models/Announcement.js';
+import { protect, authorize, optionalAuth } from '../middleware/auth.js';
+import {
+  validateAnnouncement,
+  validateId,
+  validatePagination,
+  sanitizeInput
+} from '../middleware/validation.js';
 
 // @desc    Get all announcements
 // @route   GET /api/announcements
@@ -532,4 +532,4 @@ router.get('/stats/overview', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

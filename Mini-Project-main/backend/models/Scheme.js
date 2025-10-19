@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Helper function to generate a unique ID portion (safer than relying on count)
 function generateUniqueIdPortion(prefix) {
@@ -383,4 +383,4 @@ schemeSchema.statics.searchSchemes = function(query, filters = {}) {
     .sort({ score: { $meta: 'textScore' }, priority: -1, createdAt: -1 });
 };
 
-module.exports = mongoose.model('Scheme', schemeSchema);
+export default mongoose.model('Scheme', schemeSchema);

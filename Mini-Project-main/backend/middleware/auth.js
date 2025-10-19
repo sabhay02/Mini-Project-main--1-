@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 // 🌟 CORRECTION/IMPROVEMENT: Import dependent models at the top
-const Application = require('../models/Application');
-const Grievance = require('../models/Grievance');
+import Application from '../models/Application.js';
+import Grievance from '../models/Grievance.js';
 
 // Protect routes - verify JWT token
 const protect = async (req, res, next) => {
@@ -72,16 +72,6 @@ const authorize = (...roles) => {
   };
 };
 
-// Check if user is verified
-const requireVerification = (req, res, next) => {
-  if (!req.user.isVerified) {
-    return res.status(403).json({
-      success: false,
-      message: 'Please verify your account before accessing this resource'
-    });
-  }
-  next();
-};
 
 // Optional authentication - doesn't fail if no token
 const optionalAuth = async (req, res, next) => {
@@ -199,12 +189,11 @@ const validateAdminPermissions = (requiredPermissions = []) => {
   };
 };
 
-module.exports = {
-  protect,
-  authorize,
-  requireVerification,
-  optionalAuth,
-  sensitiveOperationLimit,
-  checkResourceAccess,
-  validateAdminPermissions
+export {
+  protect,
+  authorize,
+  optionalAuth,
+  sensitiveOperationLimit,
+  checkResourceAccess,
+  validateAdminPermissions
 };

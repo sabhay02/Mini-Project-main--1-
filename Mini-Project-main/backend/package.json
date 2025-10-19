@@ -2,6 +2,7 @@
   "name": "e-gram-panchayat-backend",
   "version": "1.0.0",
   "description": "Backend API for e-Gram Panchayat",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
