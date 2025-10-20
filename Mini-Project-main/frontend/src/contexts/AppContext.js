@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import apiService from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -143,8 +143,8 @@ function appReducer(state, action) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Helper function to handle API calls
-  const handleApiCall = async (apiCall, type, successMessage) => {
+  // Helper function to handle API calls - wrapped in useCallback
+  const handleApiCall = useCallback(async (apiCall, type, successMessage) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: { type, loading: true } });
       dispatch({ type: 'CLEAR_ERROR' });
@@ -166,229 +166,268 @@ export function AppProvider({ children }) {
       
       throw error;
     }
-  };
+  }, []);
 
   // Schemes
-  const fetchSchemes = async (params = {}) => {
-    return handleApiCall(
-      () => apiService.getSchemes(params),
-      'schemes'
-    ).then(response => {
+  const fetchSchemes = useCallback(async (params = {}) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: { type: 'schemes', loading: true } });
+      const response = await apiService.getSchemes(params);
       const schemes = response.data?.schemes || response.schemes || [];
       dispatch({ type: 'SET_SCHEMES', payload: schemes });
       return schemes;
-    }).catch(error => {
+    } catch (error) {
       console.error('Error fetching schemes:', error);
-      // Set empty array on error to prevent undefined state
       dispatch({ type: 'SET_SCHEMES', payload: [] });
       return [];
-    });
-  };
+    }
+  }, []);
 
-  const getScheme = async (id) => {
-    return handleApiCall(() => apiService.getScheme(id), 'schemes').then(response => {
+  const getScheme = useCallback(async (id) => {
+    try {
+      const response = await apiService.getScheme(id);
       return response.data?.scheme || response.scheme;
-    });
-  };
+    } catch (error) {
+      console.error('Error fetching scheme:', error);
+      throw error;
+    }
+  }, []);
 
-  const applyForScheme = async (schemeId, applicationData) => {
-    return handleApiCall(
-      () => apiService.applyForScheme(schemeId, applicationData),
-      'applications',
-      'Application submitted successfully!'
-    ).then(application => {
+  const applyForScheme = useCallback(async (schemeId, applicationData) => {
+    try {
+      const response = await apiService.applyForScheme(schemeId, applicationData);
+      const application = response.data?.application || response.application;
       dispatch({ type: 'ADD_APPLICATION', payload: application });
+      toast.success('Application submitted successfully!');
       return application;
-    });
-  };
+    } catch (error) {
+      toast.error(error.message || 'Failed to submit application');
+      throw error;
+    }
+  }, []);
 
   // Applications
-  const fetchApplications = async (params = {}) => {
-    return handleApiCall(
-      () => apiService.getApplications(params),
-      'applications'
-    ).then(response => {
+  const fetchApplications = useCallback(async (params = {}) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: { type: 'applications', loading: true } });
+      const response = await apiService.getApplications(params);
       const applications = response.data?.applications || response.applications || [];
       dispatch({ type: 'SET_APPLICATIONS', payload: applications });
       return applications;
-    });
-  };
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      dispatch({ type: 'SET_APPLICATIONS', payload: [] });
+      return [];
+    }
+  }, []);
 
-  const getApplication = async (id) => {
-    return handleApiCall(() => apiService.getApplication(id), 'applications').then(response => {
+  const getApplication = useCallback(async (id) => {
+    try {
+      const response = await apiService.getApplication(id);
       return response.data?.application || response.application;
-    });
-  };
+    } catch (error) {
+      console.error('Error fetching application:', error);
+      throw error;
+    }
+  }, []);
 
-  const createApplication = async (applicationData) => {
-    return handleApiCall(
-      () => apiService.createApplication(applicationData),
-      'applications',
-      'Application submitted successfully!'
-    ).then(response => {
+  const createApplication = useCallback(async (applicationData) => {
+    try {
+      const response = await apiService.createApplication(applicationData);
       const application = response.data?.application || response.application;
       dispatch({ type: 'ADD_APPLICATION', payload: application });
+      toast.success('Application submitted successfully!');
       return application;
-    });
-  };
+    } catch (error) {
+      toast.error(error.message || 'Failed to create application');
+      throw error;
+    }
+  }, []);
 
-  const updateApplication = async (id, applicationData) => {
-    return handleApiCall(
-      () => apiService.updateApplication(id, applicationData),
-      'applications',
-      'Application updated successfully!'
-    ).then(response => {
+  const updateApplication = useCallback(async (id, applicationData) => {
+    try {
+      const response = await apiService.updateApplication(id, applicationData);
       const application = response.data?.application || response.application;
       dispatch({ type: 'UPDATE_APPLICATION', payload: application });
+      toast.success('Application updated successfully!');
       return application;
-    });
-  };
+    } catch (error) {
+      toast.error(error.message || 'Failed to update application');
+      throw error;
+    }
+  }, []);
 
-  const deleteApplication = async (id) => {
-    return handleApiCall(
-      () => apiService.deleteApplication(id),
-      'applications',
-      'Application deleted successfully!'
-    ).then(() => {
+  const deleteApplication = useCallback(async (id) => {
+    try {
+      await apiService.deleteApplication(id);
       dispatch({ 
         type: 'SET_APPLICATIONS', 
         payload: state.applications.filter(app => app.id !== id) 
       });
-    });
-  };
+      toast.success('Application deleted successfully!');
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete application');
+      throw error;
+    }
+  }, [state.applications]);
 
-  const uploadApplicationDocuments = async (applicationId, formData) => {
-    return handleApiCall(
-      () => apiService.uploadApplicationDocuments(applicationId, formData),
-      'applications',
-      'Documents uploaded successfully!'
-    );
-  };
+  const uploadApplicationDocuments = useCallback(async (applicationId, formData) => {
+    try {
+      const response = await apiService.uploadApplicationDocuments(applicationId, formData);
+      toast.success('Documents uploaded successfully!');
+      return response;
+    } catch (error) {
+      toast.error(error.message || 'Failed to upload documents');
+      throw error;
+    }
+  }, []);
 
   // Grievances
-  const fetchGrievances = async (params = {}) => {
-    return handleApiCall(
-      () => apiService.getGrievances(params),
-      'grievances'
-    ).then(grievances => {
+  const fetchGrievances = useCallback(async (params = {}) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: { type: 'grievances', loading: true } });
+      const response = await apiService.getGrievances(params);
+      const grievances = response.data?.grievances || response.grievances || [];
       dispatch({ type: 'SET_GRIEVANCES', payload: grievances });
       return grievances;
-    });
-  };
+    } catch (error) {
+      console.error('Error fetching grievances:', error);
+      dispatch({ type: 'SET_GRIEVANCES', payload: [] });
+      return [];
+    }
+  }, []);
 
-  const getGrievance = async (id) => {
-    return handleApiCall(() => apiService.getGrievance(id), 'grievances');
-  };
+  const getGrievance = useCallback(async (id) => {
+    try {
+      const response = await apiService.getGrievance(id);
+      return response.data?.grievance || response.grievance;
+    } catch (error) {
+      console.error('Error fetching grievance:', error);
+      throw error;
+    }
+  }, []);
 
-  const createGrievance = async (grievanceData) => {
-    return handleApiCall(
-      () => apiService.createGrievance(grievanceData),
-      'grievances',
-      'Grievance submitted successfully!'
-    ).then(grievance => {
+  const createGrievance = useCallback(async (grievanceData) => {
+    try {
+      const response = await apiService.createGrievance(grievanceData);
+      const grievance = response.data?.grievance || response.grievance;
       dispatch({ type: 'ADD_GRIEVANCE', payload: grievance });
+      toast.success('Grievance submitted successfully!');
       return grievance;
-    });
-  };
+    } catch (error) {
+      toast.error(error.message || 'Failed to create grievance');
+      throw error;
+    }
+  }, []);
 
-  const updateGrievance = async (id, grievanceData) => {
-    return handleApiCall(
-      () => apiService.updateGrievance(id, grievanceData),
-      'grievances',
-      'Grievance updated successfully!'
-    ).then(grievance => {
+  const updateGrievance = useCallback(async (id, grievanceData) => {
+    try {
+      const response = await apiService.updateGrievance(id, grievanceData);
+      const grievance = response.data?.grievance || response.grievance;
       dispatch({ type: 'UPDATE_GRIEVANCE', payload: grievance });
+      toast.success('Grievance updated successfully!');
       return grievance;
-    });
-  };
+    } catch (error) {
+      toast.error(error.message || 'Failed to update grievance');
+      throw error;
+    }
+  }, []);
 
-  const deleteGrievance = async (id) => {
-    return handleApiCall(
-      () => apiService.deleteGrievance(id),
-      'grievances',
-      'Grievance deleted successfully!'
-    ).then(() => {
+  const deleteGrievance = useCallback(async (id) => {
+    try {
+      await apiService.deleteGrievance(id);
       dispatch({ 
         type: 'SET_GRIEVANCES', 
         payload: state.grievances.filter(grievance => grievance.id !== id) 
       });
-    });
-  };
+      toast.success('Grievance deleted successfully!');
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete grievance');
+      throw error;
+    }
+  }, [state.grievances]);
 
-  const uploadGrievanceDocuments = async (grievanceId, formData) => {
-    return handleApiCall(
-      () => apiService.uploadGrievanceDocuments(grievanceId, formData),
-      'grievances',
-      'Documents uploaded successfully!'
-    );
-  };
+  const uploadGrievanceDocuments = useCallback(async (grievanceId, formData) => {
+    try {
+      const response = await apiService.uploadGrievanceDocuments(grievanceId, formData);
+      toast.success('Documents uploaded successfully!');
+      return response;
+    } catch (error) {
+      toast.error(error.message || 'Failed to upload documents');
+      throw error;
+    }
+  }, []);
 
   // Comments
-  const addApplicationComment = async (applicationId, comment) => {
-    return handleApiCall(
-      () => apiService.addApplicationComment(applicationId, comment),
-      'applications',
-      'Comment added successfully!'
-    );
-  };
+  const addApplicationComment = useCallback(async (applicationId, comment) => {
+    try {
+      const response = await apiService.addApplicationComment(applicationId, comment);
+      toast.success('Comment added successfully!');
+      return response;
+    } catch (error) {
+      toast.error(error.message || 'Failed to add comment');
+      throw error;
+    }
+  }, []);
 
-  const addGrievanceComment = async (grievanceId, comment) => {
-    return handleApiCall(
-      () => apiService.addGrievanceComment(grievanceId, comment),
-      'grievances',
-      'Comment added successfully!'
-    );
-  };
+  const addGrievanceComment = useCallback(async (grievanceId, comment) => {
+    try {
+      const response = await apiService.addGrievanceComment(grievanceId, comment);
+      toast.success('Comment added successfully!');
+      return response;
+    } catch (error) {
+      toast.error(error.message || 'Failed to add comment');
+      throw error;
+    }
+  }, []);
 
-  // Announcements
-  const fetchAnnouncements = async (params = {}) => {
-    return handleApiCall(
-      () => apiService.getAnnouncements(params),
-      'announcements'
-    ).then(response => {
+  // Announcements - CRITICAL: This is the one causing issues
+  const fetchAnnouncements = useCallback(async (params = {}) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: { type: 'announcements', loading: true } });
+      const response = await apiService.getAnnouncements(params);
       const announcements = response.data?.announcements || response.announcements || [];
       dispatch({ type: 'SET_ANNOUNCEMENTS', payload: announcements });
       return announcements;
-    }).catch(error => {
+    } catch (error) {
       console.error('Error fetching announcements:', error);
-      // Set empty array on error to prevent undefined state
       dispatch({ type: 'SET_ANNOUNCEMENTS', payload: [] });
       return [];
-    });
-  };
+    }
+  }, []); // Empty dependency array - function never changes
 
   // Services
-  const fetchServices = async (params = {}) => {
-    return handleApiCall(
-      () => apiService.getServices(params),
-      'services'
-    ).then(response => {
+  const fetchServices = useCallback(async (params = {}) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: { type: 'services', loading: true } });
+      const response = await apiService.getServices(params);
       const services = response.data?.services || response.services || [];
       dispatch({ type: 'SET_SERVICES', payload: services });
       return services;
-    }).catch(error => {
+    } catch (error) {
       console.error('Error fetching services:', error);
-      // Set empty array on error to prevent undefined state
       dispatch({ type: 'SET_SERVICES', payload: [] });
       return [];
-    });
-  };
+    }
+  }, []);
 
   // Dashboard
-  const fetchDashboardStats = async () => {
-    return handleApiCall(
-      () => apiService.getDashboardStats(),
-      'applications'
-    ).then(stats => {
+  const fetchDashboardStats = useCallback(async () => {
+    try {
+      const response = await apiService.getDashboardStats();
+      const stats = response.data?.stats || response.stats;
       dispatch({ type: 'SET_STATS', payload: stats });
       return stats;
-    });
-  };
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      throw error;
+    }
+  }, []);
 
   // Clear error
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
-  };
+  }, []);
 
   const value = {
     ...state,

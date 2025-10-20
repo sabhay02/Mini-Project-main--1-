@@ -57,13 +57,17 @@ app.options('*', cors());
 
 // --------------------------------------------------
 
-// Rate limiting
+// Rate limiting - More lenient for development
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, 
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 50000, 
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, 
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100000, // Increased limit
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health checks
+    return req.path === '/api/health';
+  }
 });
 app.use('/api/', limiter);
 
@@ -144,6 +148,19 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err.message);
+  console.error('Stack:', err.stack);
+  // Don't exit the process, just log the error
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process, just log the error
+});
+
 // Graceful shutdown
 const shutdown = () => {
     console.log('🛑 Shutting down gracefully...');
@@ -161,6 +178,11 @@ const shutdown = () => {
 };
 
 process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+
+// Only exit on manual shutdown (Ctrl+C), not on errors
+process.on('SIGINT', () => {
+  console.log('\n🛑 Received SIGINT (Ctrl+C). Shutting down gracefully...');
+  shutdown();
+});
 
 export default app;

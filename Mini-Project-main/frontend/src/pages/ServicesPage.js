@@ -5,22 +5,15 @@ import { useAuthStore } from '../store/authStore';
 import { 
   Home, 
   FileText, 
-  HeartHandshake, 
   Users, 
-  MapPin, 
-  Megaphone,
+  Building,
+  Wrench,
   TreePine,
   Recycle,
   Shield,
-  Building,
-  Wrench,
-  Phone,
-  Mail,
-  Clock,
-  CheckCircle,
-  ArrowRight,
   Search,
-  Star
+  Clock,
+  CheckCircle
 } from 'lucide-react';
 
 const ServicesPage = () => {
@@ -30,16 +23,20 @@ const ServicesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [activeTab, setActiveTab] = useState('english');
+  const [hasFetched, setHasFetched] = useState(false);
 
+  // CRITICAL FIX: Only fetch once when component mounts
   useEffect(() => {
-    fetchServices().catch(error => {
-      console.error('Error fetching services:', error);
-      // Error is already handled in AppContext, no need to show additional error
-    });
-  }, [fetchServices]);
+    if (!hasFetched) {
+      fetchServices().catch(error => {
+        console.error('Error fetching services:', error);
+      }).finally(() => {
+        setHasFetched(true);
+      });
+    }
+  }, [hasFetched, fetchServices]);
 
   const handleServiceClick = (service) => {
-    // Check if user is authenticated
     if (!isAuthenticated) {
       const serviceName = service.name || service.nameHindi || 'Unknown Service';
       navigate('/login', { 
@@ -48,7 +45,6 @@ const ServicesPage = () => {
       return;
     }
 
-    // Check if user is verified
     if (!user?.isVerified) {
       navigate('/profile', { 
         state: { message: 'Please verify your account before applying for services' }
@@ -57,7 +53,6 @@ const ServicesPage = () => {
     }
 
     try {
-      // Navigate to application form with service details
       const serviceName = service.name || service.nameHindi || 'Unknown Service';
       navigate(`/applications/new?service=${service.id}&serviceName=${encodeURIComponent(serviceName)}&type=service`);
     } catch (error) {
@@ -65,7 +60,6 @@ const ServicesPage = () => {
     }
   };
 
-  // Use API data if available, otherwise use mock data
   const mockServices = [
     {
       id: 1,
@@ -108,7 +102,6 @@ const ServicesPage = () => {
     }
   ];
 
-  // Use API data if available, otherwise use mock data
   const servicesData = services && Array.isArray(services) && services.length > 0 ? services : mockServices;
 
   const filteredServices = servicesData.filter(service => {
@@ -148,22 +141,20 @@ const ServicesPage = () => {
       security: Shield,
       construction: Building,
       maintenance: Wrench,
-      emergency: Phone,
+      emergency: FileText,
       other: FileText
     };
     return icons[category] || FileText;
   };
 
   const categories = [
-    { name: 'Essential', value: 'essential', icon: Home, count: filteredServices.filter(s => s.category === 'essential').length },
-    { name: 'Welfare', value: 'welfare', icon: Users, count: filteredServices.filter(s => s.category === 'welfare').length },
-    { name: 'Community', value: 'community', icon: Building, count: filteredServices.filter(s => s.category === 'community').length },
-    { name: 'Infrastructure', value: 'infrastructure', icon: Wrench, count: filteredServices.filter(s => s.category === 'infrastructure').length },
-    { name: 'Environment', value: 'environment', icon: TreePine, count: filteredServices.filter(s => s.category === 'environment').length },
-    { name: 'All', value: 'all', icon: FileText, count: filteredServices.length }
+    { name: 'All', value: 'all', icon: FileText, count: servicesData.length },
+    { name: 'Essential', value: 'essential', icon: Home, count: servicesData.filter(s => s.category === 'essential').length },
+    { name: 'Welfare', value: 'welfare', icon: Users, count: servicesData.filter(s => s.category === 'welfare').length },
+    { name: 'Community', value: 'community', icon: Building, count: servicesData.filter(s => s.category === 'community').length },
+    { name: 'Infrastructure', value: 'infrastructure', icon: Wrench, count: servicesData.filter(s => s.category === 'infrastructure').length },
+    { name: 'Environment', value: 'environment', icon: TreePine, count: servicesData.filter(s => s.category === 'environment').length }
   ];
-
-  // Remove loading spinner - let the page render with mock data while API loads
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -176,9 +167,9 @@ const ServicesPage = () => {
                 <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5-10-5-10 5zM2 12l10 5 10-5-10-5-10 5z"/>
                 </svg>
-          </div>
+              </div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">e-Gram Panchayat</h1>
-                  </div>
+            </div>
             <nav className="hidden md:flex items-center gap-8">
               <Link className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" to="/">
                 Home
@@ -199,7 +190,7 @@ const ServicesPage = () => {
 
       <div className="flex flex-1">
         {/* Sidebar Filters */}
-        <aside className="w-80 border-r border-gray-200 dark:border-gray-700 p-6">
+        <aside className="w-80 border-r border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-900">
           <div className="space-y-6">
             <div>
               <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">Filters</h3>
@@ -211,7 +202,7 @@ const ServicesPage = () => {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 w-4 h-4" />
                     <input
-                      className="h-12 w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 pl-10 pr-4 text-sm focus:border-primary focus:ring-primary"
+                      className="h-12 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 pl-10 pr-4 text-sm focus:border-primary focus:ring-primary text-gray-900 dark:text-white"
                       placeholder="Search services..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -223,7 +214,7 @@ const ServicesPage = () => {
                     Category
                   </label>
                   <select
-                    className="h-12 w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:border-primary focus:ring-primary"
+                    className="h-12 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:border-primary focus:ring-primary text-gray-900 dark:text-white"
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
                   >
@@ -233,12 +224,9 @@ const ServicesPage = () => {
                       </option>
                     ))}
                   </select>
-                  </div>
-          </div>
-        </div>
-            <button className="h-10 w-full rounded-lg bg-primary px-4 text-sm font-bold text-white hover:bg-primary/90 transition-colors">
-              Apply Filters
-            </button>
+                </div>
+              </div>
+            </div>
           </div>
         </aside>
 
@@ -278,10 +266,10 @@ const ServicesPage = () => {
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredServices.map((service) => {
                 const IconComponent = getCategoryIcon(service.category);
-              return (
+                return (
                   <div
                     key={service.id}
-                    className="bg-white dark:bg-gray-900 rounded-lg shadow-sm hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700 overflow-hidden cursor-pointer"
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700 overflow-hidden cursor-pointer"
                     onClick={() => handleServiceClick(service)}
                   >
                     <div className="p-6">
@@ -292,7 +280,7 @@ const ServicesPage = () => {
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(service.category)}`}>
                           {service.category}
                         </span>
-                    </div>
+                      </div>
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                         {activeTab === 'english' ? service.name : (service.nameHindi || service.name)}
                       </h3>
@@ -309,31 +297,29 @@ const ServicesPage = () => {
                           <span>{service.status || 'Active'}</span>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button className="flex-1 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-                          Apply Now
-                        </button>
-                      </div>
+                      <button className="w-full bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                        Apply Now
+                      </button>
                     </div>
                   </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
             {/* Categories */}
             <div className="mt-12">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Browse by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {categories.filter(cat => cat.value !== 'all').map((category, index) => {
                   const IconComponent = category.icon;
-              return (
+                  return (
                     <button
-                  key={index}
+                      key={index}
                       onClick={() => setFilterCategory(category.value)}
                       className={`group block p-4 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border text-center ${
                         filterCategory === category.value
                           ? 'bg-primary text-white border-primary'
-                          : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
                       }`}
                     >
                       <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-3 ${
@@ -343,16 +329,16 @@ const ServicesPage = () => {
                       }`}>
                         <IconComponent className="w-6 h-6" />
                       </div>
-                      <h3 className="text-sm font-semibold group-hover:text-primary transition-colors">
+                      <h3 className="text-sm font-semibold">
                         {category.name}
-                  </h3>
+                      </h3>
                       <p className="text-xs opacity-75 mt-1">
                         {category.count} Services
-                  </p>
+                      </p>
                     </button>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

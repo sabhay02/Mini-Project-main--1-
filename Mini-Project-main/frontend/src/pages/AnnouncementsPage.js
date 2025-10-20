@@ -7,14 +7,11 @@ import {
   Clock, 
   User, 
   Eye, 
-  Filter,
   Search,
   Bell,
-  BellOff,
   Star,
   Share2,
   Download,
-  Tag,
   MapPin,
   AlertCircle,
   Info,
@@ -26,22 +23,35 @@ const AnnouncementsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [hasFetched, setHasFetched] = useState(false);
 
+  // CRITICAL FIX: Only fetch once when component mounts
   useEffect(() => {
-    fetchAnnouncements().catch(error => {
-      console.error('Error fetching announcements:', error);
-      // Error is already handled in AppContext, no need to show additional error
-    });
-  }, [fetchAnnouncements]);
+    let isMounted = true;
+    
+    if (!hasFetched) {
+      fetchAnnouncements()
+        .catch(error => {
+          console.error('Error fetching announcements:', error);
+        })
+        .finally(() => {
+          if (isMounted) {
+            setHasFetched(true);
+          }
+        });
+    }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  // Use API data if available, otherwise use mock data
+  // Mock data
   const mockAnnouncements = [
     {
       id: 1,
       title: 'Water Supply Maintenance Notice',
-      hindiTitle: 'जल आपूर्ति रखरखाव सूचना',
-      content: 'Water supply will be temporarily suspended in Sector 5 on January 20th, 2024 from 9:00 AM to 3:00 PM for maintenance work. Residents are advised to store water in advance.',
-      hindiContent: 'सामान्य रखरखाव कार्य के लिए 20 जनवरी, 2024 को सुबह 9:00 बजे से दोपहर 3:00 बजे तक सेक्टर 5 में जल आपूर्ति अस्थायी रूप से निलंबित होगी। निवासियों को पहले से पानी जमा करने की सलाह दी जाती है।',
+      content: 'Water supply will be temporarily suspended in Sector 5 on January 20th, 2024 from 9:00 AM to 3:00 PM for maintenance work.',
       category: 'Maintenance',
       priority: 'high',
       publishedDate: '2024-01-15',
@@ -55,9 +65,7 @@ const AnnouncementsPage = () => {
     {
       id: 2,
       title: 'New Property Tax Collection Schedule',
-      hindiTitle: 'नई संपत्ति कर संग्रह कार्यक्रम',
-      content: 'The new property tax collection schedule for 2024-25 is now available. Tax collection will begin from February 1st, 2024. Online payment options are available through our portal.',
-      hindiContent: '2024-25 के लिए नया संपत्ति कर संग्रह कार्यक्रम अब उपलब्ध है। कर संग्रह 1 फरवरी, 2024 से शुरू होगा। हमारे पोर्टल के माध्यम से ऑनलाइन भुगतान विकल्प उपलब्ध हैं।',
+      content: 'The new property tax collection schedule for 2024-25 is now available. Tax collection will begin from February 1st, 2024.',
       category: 'Tax',
       priority: 'medium',
       publishedDate: '2024-01-14',
@@ -71,9 +79,7 @@ const AnnouncementsPage = () => {
     {
       id: 3,
       title: 'Community Health Camp',
-      hindiTitle: 'सामुदायिक स्वास्थ्य शिविर',
-      content: 'Free health check-up camp will be organized at Community Center on January 22nd, 2024 from 8:00 AM to 4:00 PM. All residents are welcome to attend.',
-      hindiContent: '22 जनवरी, 2024 को सुबह 8:00 बजे से शाम 4:00 बजे तक सामुदायिक केंद्र में निःशुल्क स्वास्थ्य जांच शिविर आयोजित किया जाएगा। सभी निवासी आमंत्रित हैं।',
+      content: 'Free health check-up camp will be organized at Community Center on January 22nd, 2024 from 8:00 AM to 4:00 PM.',
       category: 'Health',
       priority: 'medium',
       publishedDate: '2024-01-13',
@@ -83,38 +89,6 @@ const AnnouncementsPage = () => {
       isPinned: false,
       tags: ['health', 'camp', 'free'],
       location: 'Community Center'
-    },
-    {
-      id: 4,
-      title: 'Road Construction Update',
-      hindiTitle: 'सड़क निर्माण अपडेट',
-      content: 'Road construction work on Main Street is progressing well. Expected completion date is March 15th, 2024. Traffic diversions are in place. Please follow the signage.',
-      hindiContent: 'मुख्य सड़क पर सड़क निर्माण कार्य अच्छी प्रगति पर है। अपेक्षित पूरा होने की तारीख 15 मार्च, 2024 है। यातायात मोड़ लगे हैं। कृपया साइनेज का पालन करें।',
-      category: 'Infrastructure',
-      priority: 'low',
-      publishedDate: '2024-01-12',
-      expiryDate: '2024-03-20',
-      author: 'Public Works Department',
-      views: 423,
-      isPinned: false,
-      tags: ['road', 'construction', 'traffic'],
-      location: 'Main Street'
-    },
-    {
-      id: 5,
-      title: 'Garbage Collection Schedule Change',
-      hindiTitle: 'कचरा संग्रह कार्यक्रम परिवर्तन',
-      content: 'Due to upcoming festival, garbage collection schedule has been updated. Collection will be on Monday, Wednesday, and Friday instead of daily collection.',
-      hindiContent: 'आगामी त्योहार के कारण, कचरा संग्रह कार्यक्रम अपडेट किया गया है। दैनिक संग्रह के बजाय सोमवार, बुधवार और शुक्रवार को संग्रह होगा।',
-      category: 'Sanitation',
-      priority: 'medium',
-      publishedDate: '2024-01-11',
-      expiryDate: '2024-02-01',
-      author: 'Sanitation Department',
-      views: 678,
-      isPinned: false,
-      tags: ['garbage', 'collection', 'schedule'],
-      location: 'All Areas'
     }
   ];
 
@@ -126,8 +100,60 @@ const AnnouncementsPage = () => {
     { name: 'Sanitation', icon: '🧹', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' }
   ];
 
+  // Helper to normalize announcement data
+  const normalizeAnnouncement = (announcement) => {
+    if (!announcement || typeof announcement !== 'object') {
+      return null;
+    }
+
+    return {
+      id: announcement.id || announcement._id || Math.random(),
+      title: String(announcement.title || announcement.name || 'Untitled'),
+      content: String(announcement.content || announcement.description || 'No content available'),
+      category: String(announcement.category || 'Other'),
+      priority: String(announcement.priority || 'medium'),
+      publishedDate: announcement.publishedDate || announcement.createdAt || new Date().toISOString(),
+      expiryDate: announcement.expiryDate || announcement.validUntil || new Date().toISOString(),
+      author: String(announcement.author || announcement.createdBy || 'Unknown'),
+      views: Number(announcement.views || 0),
+      isPinned: Boolean(announcement.isPinned || announcement.pinned),
+      tags: Array.isArray(announcement.tags) ? announcement.tags.map(t => String(t)) : [],
+      location: String(announcement.location || 'N/A')
+    };
+  };
+
+  // Process announcements data safely
+  const processAnnouncementsData = () => {
+    console.log('Raw announcements data:', announcements);
+    
+    if (!announcements) {
+      return mockAnnouncements;
+    }
+
+    if (Array.isArray(announcements)) {
+      if (announcements.length === 0) {
+        return mockAnnouncements;
+      }
+      return announcements.map(normalizeAnnouncement).filter(a => a !== null);
+    }
+
+    // If announcements is an object with data property
+    if (announcements.data && Array.isArray(announcements.data)) {
+      return announcements.data.map(normalizeAnnouncement).filter(a => a !== null);
+    }
+
+    // If announcements is an object with announcements property
+    if (announcements.announcements && Array.isArray(announcements.announcements)) {
+      return announcements.announcements.map(normalizeAnnouncement).filter(a => a !== null);
+    }
+
+    return mockAnnouncements;
+  };
+
+  const announcementsData = processAnnouncementsData();
+
   const getPriorityColor = (priority) => {
-    switch (priority) {
+    switch (String(priority).toLowerCase()) {
       case 'high':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       case 'medium':
@@ -140,7 +166,7 @@ const AnnouncementsPage = () => {
   };
 
   const getPriorityIcon = (priority) => {
-    switch (priority) {
+    switch (String(priority).toLowerCase()) {
       case 'high':
         return <AlertCircle className="w-4 h-4" />;
       case 'medium':
@@ -152,24 +178,39 @@ const AnnouncementsPage = () => {
     }
   };
 
-  const announcementsData = announcements && Array.isArray(announcements) && announcements.length > 0 ? announcements : mockAnnouncements;
+  const formatDate = (dateString) => {
+    try {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'N/A';
+      return date.toLocaleDateString();
+    } catch (error) {
+      return 'N/A';
+    }
+  };
 
   const filteredAnnouncements = announcementsData.filter(announcement => {
-    const matchesSearch = announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         announcement.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         announcement.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const title = String(announcement.title || '').toLowerCase();
+    const content = String(announcement.content || '').toLowerCase();
+    const tags = announcement.tags || [];
+    const search = searchTerm.toLowerCase();
+    
+    const matchesSearch = !searchTerm || 
+                         title.includes(search) ||
+                         content.includes(search) ||
+                         tags.some(tag => String(tag).toLowerCase().includes(search));
+    
     const matchesCategory = categoryFilter === 'all' || announcement.category === categoryFilter;
     const matchesPriority = priorityFilter === 'all' || announcement.priority === priorityFilter;
+    
     return matchesSearch && matchesCategory && matchesPriority;
   });
 
-  const pinnedAnnouncements = filteredAnnouncements.filter(a => a.isPinned || a.pinned);
-  const regularAnnouncements = filteredAnnouncements.filter(a => !a.isPinned && !a.pinned);
-
-  // Remove loading spinner - let the page render with mock data while API loads
+  const pinnedAnnouncements = filteredAnnouncements.filter(a => a.isPinned);
+  const regularAnnouncements = filteredAnnouncements.filter(a => !a.isPinned);
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -243,13 +284,13 @@ const AnnouncementsPage = () => {
             <div className="space-y-4">
               {pinnedAnnouncements.map((announcement) => (
                 <div key={announcement.id} className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">{announcement.title}</h3>
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(announcement.priority)} flex items-center gap-1`}>
                           {getPriorityIcon(announcement.priority)}
-                          {announcement.priority.toUpperCase()}
+                          {String(announcement.priority).toUpperCase()}
                         </span>
                         <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs font-medium rounded-full flex items-center gap-1">
                           <Star className="w-3 h-3" />
@@ -257,29 +298,31 @@ const AnnouncementsPage = () => {
                         </span>
                       </div>
                       <p className="text-gray-700 dark:text-gray-300 mb-3">{announcement.content}</p>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {announcement.tags.map((tag) => (
-                          <span key={tag} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                      {announcement.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {announcement.tags.map((tag, idx) => (
+                            <span key={`pinned-${announcement.id}-tag-${idx}`} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {new Date(announcement.publishedDate).toLocaleDateString()}
+                          <span>{formatDate(announcement.publishedDate)}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <User className="w-4 h-4" />
-                          {announcement.author}
+                          <span>{announcement.author}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {announcement.location}
+                          <span>{announcement.location}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Eye className="w-4 h-4" />
-                          {announcement.views} views
+                          <span>{announcement.views} views</span>
                         </div>
                       </div>
                     </div>
@@ -307,48 +350,50 @@ const AnnouncementsPage = () => {
           <div className="space-y-6">
             {regularAnnouncements.map((announcement) => (
               <div key={announcement.id} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white">{announcement.title}</h3>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(announcement.priority)} flex items-center gap-1`}>
                         {getPriorityIcon(announcement.priority)}
-                        {announcement.priority.toUpperCase()}
+                        {String(announcement.priority).toUpperCase()}
                       </span>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        categories.find(c => c.name === announcement.category)?.color || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+                        categories.find(c => c.name === announcement.category)?.color || 'bg-gray-100 text-gray-800'
                       }`}>
                         {categories.find(c => c.name === announcement.category)?.icon} {announcement.category}
                       </span>
                     </div>
                     <p className="text-gray-700 dark:text-gray-300 mb-3">{announcement.content}</p>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {announcement.tags.map((tag) => (
-                        <span key={tag} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    {announcement.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {announcement.tags.map((tag, idx) => (
+                          <span key={`regular-${announcement.id}-tag-${idx}`} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        {new Date(announcement.publishedDate).toLocaleDateString()}
+                        <span>{formatDate(announcement.publishedDate)}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <User className="w-4 h-4" />
-                        {announcement.author}
+                        <span>{announcement.author}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
-                        {announcement.location}
+                        <span>{announcement.location}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Eye className="w-4 h-4" />
-                        {announcement.views} views
+                        <span>{announcement.views} views</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        Expires: {new Date(announcement.expiryDate).toLocaleDateString()}
+                        <span>Expires: {formatDate(announcement.expiryDate)}</span>
                       </div>
                     </div>
                   </div>
