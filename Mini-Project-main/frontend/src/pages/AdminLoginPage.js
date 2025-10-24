@@ -24,20 +24,61 @@ const AdminLoginPage = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    setError
   } = useForm();
 
   const onLoginSubmit = async (data) => {
-    const result = await login(data, true); // Pass true for admin login
-    if (result.success) {
-      if (result.user.role === 'admin' || result.user.role === 'staff') {
-        toast.success('Admin login successful!');
-        navigate('/admin', { replace: true });
+    try {
+      console.log('Attempting admin login with:', data.email);
+      
+      // Call login with isAdmin flag set to true
+      const result = await login(data, true);
+      
+      console.log('Login result:', result);
+      
+      if (result && result.success) {
+        const loggedInUser = result.user;
+        
+        // Verify user has admin privileges
+        if (loggedInUser && (loggedInUser.role === 'admin' || loggedInUser.role === 'staff')) {
+          toast.success(`Welcome back, ${loggedInUser.name || 'Admin'}!`);
+          // Small delay to ensure state is updated
+          setTimeout(() => {
+            navigate('/admin', { replace: true });
+          }, 100);
+        } else {
+          // User doesn't have admin role
+          toast.error('Access denied. This account does not have admin privileges.');
+          setError('email', {
+            type: 'manual',
+            message: 'Admin access required'
+          });
+        }
       } else {
-        toast.error('Access denied. Admin privileges required.');
+        // Login failed
+        const errorMessage = result?.message || 'Invalid email or password';
+        toast.error(errorMessage);
+        
+        if (errorMessage.includes('Admin privileges required')) {
+          setError('email', {
+            type: 'manual',
+            message: 'This account does not have admin access'
+          });
+        } else {
+          setError('email', {
+            type: 'manual',
+            message: errorMessage
+          });
+        }
       }
-    } else {
-      toast.error(result.message);
+    } catch (error) {
+      console.error('Admin login error:', error);
+      toast.error('An error occurred during login. Please try again.');
+      setError('email', {
+        type: 'manual',
+        message: 'Connection error - please check if the server is running'
+      });
     }
   };
 
@@ -82,6 +123,7 @@ const AdminLoginPage = () => {
                   }
                 })}
                 type="email"
+                autoComplete="email"
                 className="w-full px-3 py-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Enter admin email"
               />
@@ -104,6 +146,7 @@ const AdminLoginPage = () => {
                     }
                   })}
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   className="w-full px-3 py-4 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white"
                   placeholder="Enter admin password"
                 />
@@ -127,17 +170,31 @@ const AdminLoginPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? <LoadingSpinner size="sm" /> : 'Sign In as Admin'}
+              {isLoading ? (
+                <>
+                  <LoadingSpinner size="sm" />
+                  <span className="ml-2">Signing in...</span>
+                </>
+              ) : (
+                'Sign In as Admin'
+              )}
             </button>
           </form>
+
+          {/* Development Help */}
+          <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p className="text-xs text-yellow-800 dark:text-yellow-200">
+              <strong>Note:</strong> Ensure your account has 'admin' or 'staff' role in the database.
+            </p>
+          </div>
 
           {/* Back to regular login */}
           <div className="mt-6 text-center">
             <Link
               to="/login"
-              className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+              className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
             >
               ← Back to regular login
             </Link>

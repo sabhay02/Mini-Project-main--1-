@@ -99,7 +99,7 @@ connect(process.env.MONGODB_URI)
 app.use('/api/auth', authRouter);
 app.use('/api/applications', applicationsRouter);
 app.use('/api/grievances', grievancesRouter);
-app.use('/api/schemes', schemesRouter);
+app.use('/api/admin/schemes', schemesRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/announcements', announcementsRouter);
 app.use('/api/admin', adminRouter);

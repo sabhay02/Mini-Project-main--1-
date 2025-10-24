@@ -2,17 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, 
   Search, 
-  Filter, 
   Edit, 
-  Trash2, 
-  Eye, 
-  MoreVertical,
+  Trash2,
   CheckCircle,
   XCircle,
   Clock,
   AlertCircle
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import api from '../../store/authStore'; // Import the axios instance
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -36,26 +34,28 @@ const AdminServicesPage = () => {
   const fetchServices = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/services', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await api.get('/admin/services');
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch services');
-      }
-      
-      const data = await response.json();
-      setServices(data.data?.services || []);
+      setServices(response.data.data?.services || []);
     } catch (error) {
       console.error('Error fetching services:', error);
-      toast.error('Failed to fetch services');
-      // Set empty array on error to prevent crashes
+      toast.error(error.response?.data?.message || 'Failed to fetch services');
       setServices([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateService = async (serviceData) => {
+    try {
+      const response = await api.post('/admin/services', serviceData);
+      
+      toast.success('Service created successfully');
+      setShowCreateModal(false);
+      fetchServices();
+    } catch (error) {
+      console.error('Error creating service:', error);
+      toast.error(error.response?.data?.message || 'Failed to create service');
     }
   };
 
@@ -66,51 +66,32 @@ const AdminServicesPage = () => {
 
   const handleUpdateService = async (serviceData) => {
     try {
-      const response = await fetch(`/api/admin/services/${editingService._id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(serviceData)
-      });
+      const response = await api.put(`/admin/services/${editingService._id}`, serviceData);
       
-      if (!response.ok) {
-        throw new Error('Failed to update service');
-      }
-      
-      const updatedService = await response.json();
       setServices(services.map(service => 
-        service._id === editingService._id ? updatedService.data?.service || updatedService.service : service
+        service._id === editingService._id ? response.data.data?.service || response.data.service : service
       ));
       setShowEditModal(false);
       setEditingService(null);
       toast.success('Service updated successfully');
     } catch (error) {
       console.error('Error updating service:', error);
-      toast.error('Failed to update service');
+      toast.error(error.response?.data?.message || 'Failed to update service');
     }
   };
 
   const handleDelete = async (serviceId) => {
     try {
-      const response = await fetch(`/api/admin/services/${serviceId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await api.delete(`/admin/services/${serviceId}`);
 
-      if (response.ok) {
+      if (response.status === 200) {
         toast.success('Service deleted successfully');
         fetchServices();
         setShowDeleteModal(null);
-      } else {
-        toast.error('Failed to delete service');
       }
     } catch (error) {
       console.error('Error deleting service:', error);
-      toast.error('Error deleting service');
+      toast.error(error.response?.data?.message || 'Failed to delete service');
     }
   };
 
@@ -369,10 +350,198 @@ const AdminServicesPage = () => {
         )}
       </div>
 
+      {/* Create Service Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 my-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Create New Service
+            </h3>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const serviceData = {
+                name: formData.get('name'),
+                nameHindi: formData.get('nameHindi'),
+                description: formData.get('description'),
+                descriptionHindi: formData.get('descriptionHindi'),
+                category: formData.get('category'),
+                department: formData.get('department'),
+                status: formData.get('status'),
+                priority: formData.get('priority'),
+                processingTime: parseInt(formData.get('processingTime')),
+                featured: formData.get('featured') === 'on'
+              };
+              handleCreateService(serviceData);
+            }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto px-1">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Service Name (English) *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Service Name (Hindi)
+                  </label>
+                  <input
+                    type="text"
+                    name="nameHindi"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description (English) *
+                  </label>
+                  <textarea
+                    name="description"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description (Hindi)
+                  </label>
+                  <textarea
+                    name="descriptionHindi"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Category *
+                  </label>
+                  <select
+                    name="category"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    <option value="essential">Essential</option>
+                    <option value="welfare">Welfare</option>
+                    <option value="community">Community</option>
+                    <option value="infrastructure">Infrastructure</option>
+                    <option value="environment">Environment</option>
+                    <option value="emergency">Emergency</option>
+                    <option value="sanitation">Sanitation</option>
+                    <option value="security">Security</option>
+                    <option value="construction">Construction</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="information">Information</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Department *
+                  </label>
+                  <select
+                    name="department"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="">Select Department</option>
+                    <option value="agriculture">Agriculture</option>
+                    <option value="education">Education</option>
+                    <option value="health">Health</option>
+                    <option value="rural_development">Rural Development</option>
+                    <option value="women_child_development">Women & Child Development</option>
+                    <option value="social_justice">Social Justice</option>
+                    <option value="labour">Labour</option>
+                    <option value="housing">Housing</option>
+                    <option value="finance">Finance</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Status *
+                  </label>
+                  <select
+                    name="status"
+                    defaultValue="active"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="discontinued">Discontinued</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Priority *
+                  </label>
+                  <select
+                    name="priority"
+                    defaultValue="medium"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Processing Time (Days) *
+                  </label>
+                  <input
+                    type="number"
+                    name="processingTime"
+                    defaultValue={7}
+                    min="1"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
+                    required
+                  />
+                </div>
+                <div className="flex items-center pt-6">
+                  <input
+                    type="checkbox"
+                    name="featured"
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                  />
+                  <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Featured Service
+                  </label>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+                >
+                  Create Service
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Edit Service Modal */}
       {showEditModal && editingService && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 my-8">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Edit Service
             </h3>
@@ -393,7 +562,7 @@ const AdminServicesPage = () => {
               };
               handleUpdateService(serviceData);
             }}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto px-1">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Service Name (English)
@@ -451,9 +620,17 @@ const AdminServicesPage = () => {
                     required
                   >
                     <option value="essential">Essential</option>
-                    <option value="community">Community</option>
-                    <option value="development">Development</option>
                     <option value="welfare">Welfare</option>
+                    <option value="community">Community</option>
+                    <option value="infrastructure">Infrastructure</option>
+                    <option value="environment">Environment</option>
+                    <option value="emergency">Emergency</option>
+                    <option value="sanitation">Sanitation</option>
+                    <option value="security">Security</option>
+                    <option value="construction">Construction</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="information">Information</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
                 <div>
@@ -466,11 +643,16 @@ const AdminServicesPage = () => {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
                     required
                   >
-                    <option value="finance">Finance</option>
-                    <option value="rural_development">Rural Development</option>
-                    <option value="health">Health</option>
-                    <option value="education">Education</option>
                     <option value="agriculture">Agriculture</option>
+                    <option value="education">Education</option>
+                    <option value="health">Health</option>
+                    <option value="rural_development">Rural Development</option>
+                    <option value="women_child_development">Women & Child Development</option>
+                    <option value="social_justice">Social Justice</option>
+                    <option value="labour">Labour</option>
+                    <option value="housing">Housing</option>
+                    <option value="finance">Finance</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
                 <div>

@@ -21,111 +21,160 @@ const getToken = () => {
 };
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000, // 10 second timeout
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 10000, // 10 second timeout
 });
 
-// 🌟 CORRECTION: Interceptor now uses the getToken getter to find the token.
+// Request interceptor
 api.interceptors.request.use(
-  (config) => {
-    const token = getToken(); // Get token from persistent storage handled by Zustand
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (config) => {
+    const token = getToken(); // Get token from persistent storage handled by Zustand
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// 🌟 CORRECTION: Response interceptor now only uses the store's set() function to clear state.
+// Response interceptor
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Clear the auth store state using set()
-      const { set, logout } = useAuthStore.getState();
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear the auth store state using set()
+      const { logout } = useAuthStore.getState();
       
       // Call local logout to clear state/storage and prevent token reuse
       logout(false); // Pass false to prevent redundant API call inside logout
 
-      // Only redirect if not already on login or register page
-      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
+      // Only redirect if not already on login or register page
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
 );
 
 // --- Zustand Store Definition ---
 
 export const useAuthStore = create(
-  persist(
-    (set, get) => ({
-      // State
-      user: null,
-      token: null,
-      isLoading: false,
-      isAuthenticated: false,
+  persist(
+    (set, get) => ({
+      // State
+      user: null,
+      token: null,
+      isLoading: false,
+      isAuthenticated: false,
 
-      // Actions
-      login: async (credentials, isAdmin = false) => {
-        try {
-          set({ isLoading: true });
-          
-          // 🌟 CORRECTION: Removed manual localStorage.removeItem calls
-          
-          const response = await api.post('/auth/login', credentials);
-          const { token, user } = response.data.data;
-          
-          // Check if admin login is required
-          if (isAdmin && !['admin', 'staff'].includes(user.role)) {
-            set({ isLoading: false });
-            return {
-              success: false,
-              message: 'Access denied. Admin privileges required.',
-            };
-          }
-          
-          // 🌟 CORRECTION: Removed manual localStorage.setItem calls
-          
-          set({
-            user,
-            token,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-          
-          return { success: true, data: response.data, user };
+      // Actions
+      login: async (credentials, isAdmin = false) => {
+        try {
+          set({ isLoading: true });
+          
+          console.log('Login attempt:', { 
+            email: credentials.email, 
+            isAdmin,
+            apiUrl: API_BASE_URL 
+          });
+          
+          const response = await api.post('/auth/login', credentials);
+          
+          console.log('Login response:', response.data);
+          
+          // Handle different response structures
+          let token, user;
+          
+          if (response.data.data) {
+            // Response format: { success: true, data: { token, user } }
+            token = response.data.data.token;
+            user = response.data.data.user;
+          } else if (response.data.token && response.data.user) {
+            // Response format: { token, user }
+            token = response.data.token;
+            user = response.data.user;
+          } else {
+            throw new Error('Invalid response format from server');
+          }
+          
+          console.log('Parsed user data:', user);
+          
+          // Check if admin login is required
+          if (isAdmin && !['admin', 'staff'].includes(user.role)) {
+            console.log('Admin check failed. User role:', user.role);
+            set({ isLoading: false });
+            return {
+              success: false,
+              message: 'Access denied. Admin privileges required.',
+              user: user
+            };
+          }
+          
+          console.log('Login successful, setting state');
+          
+          set({
+            user,
+            token,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          
+          return { success: true, data: response.data, user };
         } catch (error) {
+          console.error('Login error:', error);
+          
           set({ isLoading: false });
           
           // Provide more specific error messages
           if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
             return {
               success: false,
-              message: 'Unable to connect to server. Please check if the backend is running.',
+              message: 'Unable to connect to server. Please check if the backend is running at ' + API_BASE_URL,
+            };
+          }
+          
+          if (error.response?.status === 401 || error.response?.status === 400) {
+            return {
+              success: false,
+              message: error.response?.data?.message || 'Invalid email or password',
             };
           }
           
           return {
             success: false,
-            message: error.response?.data?.message || 'Login failed',
+            message: error.response?.data?.message || error.message || 'Login failed',
           };
         }
-      },
+      },
 
       register: async (userData) => {
         try {
           set({ isLoading: true });
           
+          console.log('Register attempt:', { email: userData.email });
+          
           const response = await api.post('/auth/register', userData);
-          const { token, user } = response.data.data;
+          
+          console.log('Register response:', response.data);
+          
+          // Handle different response structures
+          let token, user;
+          
+          if (response.data.data) {
+            token = response.data.data.token;
+            user = response.data.data.user;
+          } else if (response.data.token && response.data.user) {
+            token = response.data.token;
+            user = response.data.user;
+          } else {
+            throw new Error('Invalid response format from server');
+          }
           
           // Automatically log in user after successful registration
           set({
@@ -137,6 +186,8 @@ export const useAuthStore = create(
           
           return { success: true, data: response.data, user };
         } catch (error) {
+          console.error('Register error:', error);
+          
           set({ isLoading: false });
           
           // Provide more specific error messages
@@ -154,74 +205,84 @@ export const useAuthStore = create(
         }
       },
 
+      // If `skipApi` is true, skips the API call and just clears local state (used by interceptor)
+      logout: async (skipApi = false) => {
+        try {
+          // Only call logout API if skipApi is false (default behavior)
+          if (!skipApi) {
+            await api.post('/auth/logout');
+          }
+        } catch (error) {
+          console.error('Logout error:', error);
+          // Continue with local logout even if API call fails
+        } finally {
+          console.log('Clearing auth state');
+          
+          // Clear auth store state via set() which triggers persist
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
+      },
 
-      // If `skipApi` is true, skips the API call and just clears local state (used by interceptor)
-      logout: async (skipApi = false) => {
-        try {
-          // Only call logout API if skipApi is false (default behavior)
-          if (!skipApi) {
-            await api.post('/auth/logout');
-          }
-        } catch (error) {
-          // Continue with local logout even if API call fails
-        } finally {
-          // 🌟 CORRECTION: Removed manual localStorage.removeItem calls
-          
-          // Clear auth store state via set() which triggers persist
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
-        }
-      },
+      updateProfile: async (profileData) => {
+        try {
+          set({ isLoading: true });
+          
+          const response = await api.put('/auth/profile', profileData);
+          
+          let user;
+          if (response.data.data) {
+            user = response.data.data.user;
+          } else if (response.data.user) {
+            user = response.data.user;
+          }
+          
+          set({
+            user,
+            isLoading: false,
+          });
+          
+          return { success: true, data: response.data };
+        } catch (error) {
+          console.error('Update profile error:', error);
+          
+          set({ isLoading: false });
+          return {
+            success: false,
+            message: error.response?.data?.message || 'Profile update failed',
+          };
+        }
+      },
 
-      updateProfile: async (profileData) => {
-        try {
-          set({ isLoading: true });
-          
-          const response = await api.put('/auth/profile', profileData);
-          const { user } = response.data.data;
-          
-          // 🌟 CORRECTION: Removed manual localStorage.setItem call
-          
-          set({
-            user,
-            isLoading: false,
-          });
-          
-          return { success: true, data: response.data };
-        } catch (error) {
-          set({ isLoading: false });
-          return {
-            success: false,
-            message: error.response?.data?.message || 'Profile update failed',
-          };
-        }
-      },
-
-      changePassword: async (passwordData) => {
-        try {
-          set({ isLoading: true });
-          
-          const response = await api.put('/auth/change-password', passwordData);
-          
-          set({ isLoading: false });
-          return { success: true, data: response.data };
-        } catch (error) {
-          set({ isLoading: false });
-          return {
-            success: false,
-            message: error.response?.data?.message || 'Password change failed',
-          };
-        }
-      },
+      changePassword: async (passwordData) => {
+        try {
+          set({ isLoading: true });
+          
+          const response = await api.put('/auth/change-password', passwordData);
+          
+          set({ isLoading: false });
+          return { success: true, data: response.data };
+        } catch (error) {
+          console.error('Change password error:', error);
+          
+          set({ isLoading: false });
+          return {
+            success: false,
+            message: error.response?.data?.message || 'Password change failed',
+          };
+        }
+      },
 
       checkAuth: async () => {
         // Rely on persisted state being loaded initially by middleware
         const token = get().token;
         const user = get().user;
+        
+        console.log('Checking auth:', { hasToken: !!token, hasUser: !!user });
         
         if (token && user) {
           try {
@@ -229,7 +290,15 @@ export const useAuthStore = create(
             
             // Verify token with backend
             const response = await api.get('/auth/me');
-            const { user: userData } = response.data.data;
+            
+            let userData;
+            if (response.data.data) {
+              userData = response.data.data.user;
+            } else if (response.data.user) {
+              userData = response.data.user;
+            }
+            
+            console.log('Auth check successful:', userData);
             
             set({
               user: userData,
@@ -252,11 +321,13 @@ export const useAuthStore = create(
               // For network errors, keep user logged in but set loading to false
               set({
                 isLoading: false,
+                isAuthenticated: true, // Keep authenticated
               });
             }
           }
         } else {
           // No token or user data - ensure clean state
+          console.log('No auth data found');
           set({
             user: null,
             token: null,
@@ -266,63 +337,67 @@ export const useAuthStore = create(
         }
       },
 
-      refreshUser: async () => {
-        try {
-          const response = await api.get('/auth/me');
-          const { user } = response.data.data;
-          
-          // 🌟 CORRECTION: Removed manual localStorage.setItem call
-          
-          set({ user });
-          
-          return { success: true, data: response.data };
-        } catch (error) {
-          return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to refresh user data',
-          };
-        }
-      },
+      refreshUser: async () => {
+        try {
+          const response = await api.get('/auth/me');
+          
+          let user;
+          if (response.data.data) {
+            user = response.data.data.user;
+          } else if (response.data.user) {
+            user = response.data.user;
+          }
+          
+          set({ user });
+          
+          return { success: true, data: response.data };
+        } catch (error) {
+          console.error('Refresh user error:', error);
+          
+          return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to refresh user data',
+          };
+        }
+      },
 
+      // Helper functions
+      isAdmin: () => {
+        const { user } = get();
+        return user?.role === 'admin';
+      },
 
-      // Helper functions
-      isAdmin: () => {
-        const { user } = get();
-        return user?.role === 'admin';
-      },
+      isStaff: () => {
+        const { user } = get();
+        return user?.role === 'staff' || user?.role === 'admin';
+      },
 
-      isStaff: () => {
-        const { user } = get();
-        return user?.role === 'staff' || user?.role === 'admin';
-      },
-
-      isVerified: () => {
-        const { user } = get();
-        return user?.isVerified;
-      },
-    }),
-    {
-      name: 'auth-storage',
-      // 🌟 CORRECTION: Removed manual localStorage operations from partialize/rehydrate logic
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        isAuthenticated: state.isAuthenticated,
-      }),
-      version: 2,
-      migrate: (persistedState, version) => {
-        if (version !== 2 || (!persistedState?.user && persistedState?.token)) {
-          return {
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          };
-        }
-        return persistedState;
-      },
-    }
-  )
+      isVerified: () => {
+        const { user } = get();
+        return user?.isVerified;
+      },
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      version: 2,
+      migrate: (persistedState, version) => {
+        if (version !== 2 || (!persistedState?.user && persistedState?.token)) {
+          return {
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          };
+        }
+        return persistedState;
+      },
+    }
+  )
 );
 
 export default api;

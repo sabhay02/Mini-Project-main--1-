@@ -25,7 +25,6 @@ const ServicesPage = () => {
   const [activeTab, setActiveTab] = useState('english');
   const [hasFetched, setHasFetched] = useState(false);
 
-  // CRITICAL FIX: Only fetch once when component mounts
   useEffect(() => {
     if (!hasFetched) {
       fetchServices().catch(error => {
@@ -60,49 +59,7 @@ const ServicesPage = () => {
     }
   };
 
-  const mockServices = [
-    {
-      id: 1,
-      name: 'Property Tax',
-      nameHindi: 'संपत्ति कर',
-      description: 'Pay your property tax online with ease',
-      descriptionHindi: 'आसानी से अपने संपत्ति कर का ऑनलाइन भुगतान करें',
-      category: 'essential',
-      department: 'revenue',
-      status: 'active',
-      features: ['Online Payment', 'Tax Calculation', 'Receipt Generation'],
-      processingTime: { days: 1, description: '1 day' },
-      fees: { amount: 0, currency: 'INR', description: 'No additional fees' }
-    },
-    {
-      id: 2,
-      name: 'Water Connection',
-      nameHindi: 'पानी कनेक्शन',
-      description: 'Apply for new water connection',
-      descriptionHindi: 'नए पानी कनेक्शन के लिए आवेदन करें',
-      category: 'essential',
-      department: 'water_supply',
-      status: 'active',
-      features: ['Online Application', 'Document Upload', 'Status Tracking'],
-      processingTime: { days: 7, description: '7 days' },
-      fees: { amount: 500, currency: 'INR', description: 'Connection charges' }
-    },
-    {
-      id: 3,
-      name: 'Birth Certificate',
-      nameHindi: 'जन्म प्रमाण पत्र',
-      description: 'Apply for birth certificate',
-      descriptionHindi: 'जन्म प्रमाण पत्र के लिए आवेदन करें',
-      category: 'essential',
-      department: 'revenue',
-      status: 'active',
-      features: ['Digital Certificate', 'Online Application', 'Fast Processing'],
-      processingTime: { days: 3, description: '3 days' },
-      fees: { amount: 50, currency: 'INR', description: 'Certificate fee' }
-    }
-  ];
-
-  const servicesData = services && Array.isArray(services) && services.length > 0 ? services : mockServices;
+  const servicesData = services || [];
 
   const filteredServices = servicesData.filter(service => {
     const serviceName = service.name || service.nameHindi || '';
