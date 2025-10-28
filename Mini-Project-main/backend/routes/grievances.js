@@ -13,14 +13,20 @@ import {
 
 // @desc    Get user's grievances
 // @route   GET /api/grievances
-// @access  Private (Citizen only)
-router.get('/', protect, authorize('citizen'), validatePagination, async (req, res) => {
+// @access  Private (All authenticated users)
+router.get('/', protect, validatePagination, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const query = { user: req.user._id };
+    let query = {};
+    
+    // For citizens, only show their grievances
+    // For admin/staff, show all grievances or filtered ones
+    if (req.user.role === 'citizen') {
+      query.user = req.user._id;
+    }
     
     // Filter by status if provided
     if (req.query.status) {
@@ -123,6 +129,21 @@ router.post('/', protect, authorize('citizen'), sanitizeInput, validateGrievance
     });
   } catch (error) {
     console.error('Submit grievance error:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = {};
+      Object.keys(error.errors).forEach((key) => {
+        errors[key] = error.errors[key].message;
+      });
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Failed to submit grievance',

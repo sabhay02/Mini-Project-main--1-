@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, Search, Filter, XCircle, CheckCircle, Clock, MoreVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -24,7 +24,7 @@ const AdminAnnouncementsPage = () => {
     status: 'published',
     featured: false,
     pinned: false,
-    language: 'en'
+    announcementLanguage: 'bilingual'
   });
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -37,7 +37,7 @@ const AdminAnnouncementsPage = () => {
   const fetchAnnouncements = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/announcements', {
+      const response = await fetch('/api/announcements', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -49,11 +49,16 @@ const AdminAnnouncementsPage = () => {
       }
       
       const data = await response.json();
-      setAnnouncements(data.data?.announcements || []);
+      console.log('Fetched announcements:', data);
+      
+      if (data.success && data.data) {
+        setAnnouncements(data.data.announcements || []);
+      } else {
+        setAnnouncements([]);
+      }
     } catch (error) {
       console.error('Error fetching announcements:', error);
       toast.error('Failed to fetch announcements');
-      // Set empty array on error to prevent crashes
       setAnnouncements([]);
     } finally {
       setLoading(false);
@@ -85,7 +90,7 @@ const AdminAnnouncementsPage = () => {
       status: 'published',
       featured: false,
       pinned: false,
-      language: 'en'
+      announcementLanguage: 'bilingual'
     });
     setShowModal(true);
   };
@@ -93,8 +98,26 @@ const AdminAnnouncementsPage = () => {
   const openEditModal = (announcement) => {
     setIsEditing(true);
     setCurrentAnnouncement(announcement);
+    
+    // Map old values to new values if they exist
+    let languageValue = announcement.announcementLanguage || announcement.language || 'bilingual';
+    if (languageValue === 'both') languageValue = 'bilingual';
+    if (languageValue === 'en') languageValue = 'english';
+    if (languageValue === 'hi') languageValue = 'hindi';
+    
     setFormData({
-      ...announcement
+      title: announcement.title || '',
+      titleHindi: announcement.titleHindi || '',
+      content: announcement.content || '',
+      contentHindi: announcement.contentHindi || '',
+      type: announcement.type || 'general',
+      priority: announcement.priority || 'medium',
+      category: announcement.category || 'general',
+      targetAudience: announcement.targetAudience || 'all',
+      status: announcement.status || 'published',
+      featured: announcement.featured || false,
+      pinned: announcement.pinned || false,
+      announcementLanguage: languageValue
     });
     setShowModal(true);
   };
@@ -102,10 +125,15 @@ const AdminAnnouncementsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setActionLoading(true);
+    
     const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing ? `/api/admin/announcements/${currentAnnouncement._id}` : '/api/admin/announcements';
+    const url = isEditing 
+      ? `/api/announcements/${currentAnnouncement._id}` 
+      : '/api/announcements';
 
     try {
+      console.log('Submitting announcement:', { method, url, formData });
+      
       const response = await fetch(url, {
         method,
         headers: {
@@ -115,13 +143,16 @@ const AdminAnnouncementsPage = () => {
         body: JSON.stringify(formData)
       });
 
-      if (response.ok) {
-        toast.success(`Announcement ${isEditing ? 'updated' : 'created'} successfully!`);
+      const result = await response.json();
+      console.log('Response:', result);
+
+      if (response.ok && result.success) {
+        toast.success(result.message || `Announcement ${isEditing ? 'updated' : 'created'} successfully!`);
         fetchAnnouncements();
         setShowModal(false);
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || `Failed to ${isEditing ? 'update' : 'create'} announcement`);
+        toast.error(result.message || `Failed to ${isEditing ? 'update' : 'create'} announcement`);
+        console.error('Error details:', result);
       }
     } catch (error) {
       console.error(`Error ${isEditing ? 'updating' : 'creating'} announcement:`, error);
@@ -136,19 +167,20 @@ const AdminAnnouncementsPage = () => {
 
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/admin/announcements/${announcementId}`, {
+      const response = await fetch(`/api/announcements/${announcementId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (response.ok) {
-        toast.success('Announcement deleted successfully!');
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast.success(result.message || 'Announcement deleted successfully!');
         fetchAnnouncements();
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || 'Failed to delete announcement');
+        toast.error(result.message || 'Failed to delete announcement');
       }
     } catch (error) {
       console.error('Error deleting announcement:', error);
@@ -159,8 +191,8 @@ const AdminAnnouncementsPage = () => {
   };
 
   const filteredAnnouncements = announcements.filter(announcement => {
-    const matchesSearch = announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         announcement.announcementId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = announcement.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         announcement.announcementId?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || announcement.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -195,7 +227,6 @@ const AdminAnnouncementsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -214,7 +245,6 @@ const AdminAnnouncementsPage = () => {
           </button>
         </div>
 
-        {/* Filters and Search */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -245,10 +275,14 @@ const AdminAnnouncementsPage = () => {
                 <option value="archived">Archived</option>
               </select>
             </div>
+            <div className="flex items-end">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Total: {filteredAnnouncements.length} announcements
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Announcements Table */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -278,9 +312,20 @@ const AdminAnnouncementsPage = () => {
                 {filteredAnnouncements.length > 0 ? (
                   filteredAnnouncements.map((announcement) => (
                     <tr key={announcement._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{announcement.title}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{announcement.titleHindi}</div>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {announcement.title}
+                        </div>
+                        {announcement.titleHindi && (
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {announcement.titleHindi}
+                          </div>
+                        )}
+                        {announcement.announcementId && (
+                          <div className="text-xs text-gray-400 dark:text-gray-500">
+                            ID: {announcement.announcementId}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {announcement.type}
@@ -311,6 +356,7 @@ const AdminAnnouncementsPage = () => {
                             onClick={() => handleDelete(announcement._id)}
                             className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                             title="Delete"
+                            disabled={actionLoading}
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>
@@ -331,7 +377,6 @@ const AdminAnnouncementsPage = () => {
         </div>
       </div>
 
-      {/* Announcement Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex justify-center items-center">
           <div className="relative p-8 border w-full max-w-3xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
@@ -341,33 +386,69 @@ const AdminAnnouncementsPage = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title (English)</label>
-                  <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Title (English) <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    name="title" 
+                    id="title" 
+                    value={formData.title} 
+                    onChange={handleInputChange} 
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border" 
+                  />
                 </div>
                 <div>
                   <label htmlFor="titleHindi" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title (Hindi)</label>
-                  <input type="text" name="titleHindi" id="titleHindi" value={formData.titleHindi} onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                  <input 
+                    type="text" 
+                    name="titleHindi" 
+                    id="titleHindi" 
+                    value={formData.titleHindi} 
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border" 
+                  />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Content (English)</label>
-                <textarea name="content" id="content" rows="4" value={formData.content} onChange={handleInputChange} required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Content (English) <span className="text-red-500">*</span>
+                </label>
+                <textarea 
+                  name="content" 
+                  id="content" 
+                  rows="4" 
+                  value={formData.content} 
+                  onChange={handleInputChange} 
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border"
+                ></textarea>
               </div>
               <div>
                 <label htmlFor="contentHindi" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Content (Hindi)</label>
-                <textarea name="contentHindi" id="contentHindi" rows="4" value={formData.contentHindi} onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                <textarea 
+                  name="contentHindi" 
+                  id="contentHindi" 
+                  rows="4" 
+                  value={formData.contentHindi} 
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border"
+                ></textarea>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
-                  <select name="type" id="type" value={formData.type} onChange={handleInputChange} required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                  <select 
+                    name="type" 
+                    id="type" 
+                    value={formData.type} 
+                    onChange={handleInputChange} 
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border"
+                  >
                     <option value="general">General</option>
                     <option value="scheme_launch">Scheme Launch</option>
                     <option value="deadline_reminder">Deadline Reminder</option>
@@ -381,8 +462,14 @@ const AdminAnnouncementsPage = () => {
                 </div>
                 <div>
                   <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Priority</label>
-                  <select name="priority" id="priority" value={formData.priority} onChange={handleInputChange} required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                  <select 
+                    name="priority" 
+                    id="priority" 
+                    value={formData.priority} 
+                    onChange={handleInputChange} 
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border"
+                  >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
@@ -390,25 +477,79 @@ const AdminAnnouncementsPage = () => {
                   </select>
                 </div>
                 <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                  <select 
+                    name="category" 
+                    id="category" 
+                    value={formData.category} 
+                    onChange={handleInputChange} 
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border"
+                  >
+                    <option value="general">General</option>
+                    <option value="schemes">Schemes</option>
+                    <option value="services">Services</option>
+                    <option value="events">Events</option>
+                    <option value="deadlines">Deadlines</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="policy">Policy</option>
+                    <option value="emergency">Emergency</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                   <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                  <select name="status" id="status" value={formData.status} onChange={handleInputChange} required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                  <select 
+                    name="status" 
+                    id="status" 
+                    value={formData.status} 
+                    onChange={handleInputChange} 
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border"
+                  >
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
                     <option value="archived">Archived</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="announcementLanguage" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Language</label>
+                  <select 
+                    name="announcementLanguage" 
+                    id="announcementLanguage" 
+                    value={formData.announcementLanguage} 
+                    onChange={handleInputChange} 
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border"
+                  >
+                    <option value="english">English Only</option>
+                    <option value="hindi">Hindi Only</option>
+                    <option value="bilingual">Bilingual (Both)</option>
                   </select>
                 </div>
               </div>
 
               <div className="flex items-center space-x-4">
                 <label className="flex items-center">
-                  <input type="checkbox" name="featured" checked={formData.featured} onChange={handleCheckboxChange}
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600" />
+                  <input 
+                    type="checkbox" 
+                    name="featured" 
+                    checked={formData.featured} 
+                    onChange={handleCheckboxChange}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" 
+                  />
                   <span className="ml-2 text-sm text-gray-900 dark:text-white">Featured</span>
                 </label>
                 <label className="flex items-center">
-                  <input type="checkbox" name="pinned" checked={formData.pinned} onChange={handleCheckboxChange}
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:bg-gray-700 dark:border-gray-600" />
+                  <input 
+                    type="checkbox" 
+                    name="pinned" 
+                    checked={formData.pinned} 
+                    onChange={handleCheckboxChange}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" 
+                  />
                   <span className="ml-2 text-sm text-gray-900 dark:text-white">Pinned</span>
                 </label>
               </div>
@@ -418,6 +559,7 @@ const AdminAnnouncementsPage = () => {
                   type="button"
                   onClick={() => setShowModal(false)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  disabled={actionLoading}
                 >
                   Cancel
                 </button>
@@ -426,7 +568,14 @@ const AdminAnnouncementsPage = () => {
                   disabled={actionLoading}
                   className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
                 >
-                  {actionLoading ? <LoadingSpinner size="sm" /> : (isEditing ? 'Update Announcement' : 'Create Announcement')}
+                  {actionLoading ? (
+                    <span className="flex items-center">
+                      <LoadingSpinner size="sm" />
+                      <span className="ml-2">Processing...</span>
+                    </span>
+                  ) : (
+                    isEditing ? 'Update Announcement' : 'Create Announcement'
+                  )}
                 </button>
               </div>
             </form>

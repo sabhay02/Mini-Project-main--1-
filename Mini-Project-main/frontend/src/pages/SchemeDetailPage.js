@@ -344,7 +344,7 @@ const SchemeDetailPage = () => {
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">Income Limit</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Annual income should be less than {formatCurrency(scheme.eligibility.incomeLimit)}
+                        Annual income should be less than {formatCurrency(scheme.eligibility.incomeLimit.type)}
                       </p>
                     </div>
                   </div>

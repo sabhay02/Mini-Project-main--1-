@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useAuthStore } from '../store/authStore';
 import { 
@@ -27,11 +27,9 @@ const ServicesPage = () => {
 
   useEffect(() => {
     if (!hasFetched) {
-      fetchServices().catch(error => {
-        console.error('Error fetching services:', error);
-      }).finally(() => {
-        setHasFetched(true);
-      });
+      fetchServices()
+        .catch((error) => console.error('Error fetching services:', error))
+        .finally(() => setHasFetched(true));
     }
   }, [hasFetched, fetchServices]);
 
@@ -61,11 +59,12 @@ const ServicesPage = () => {
 
   const servicesData = services || [];
 
-  const filteredServices = servicesData.filter(service => {
+  const filteredServices = servicesData.filter((service) => {
     const serviceName = service.name || service.nameHindi || '';
     const hindiName = service.nameHindi || '';
-    const matchesSearch = serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         hindiName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hindiName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || service.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
@@ -115,36 +114,6 @@ const ServicesPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <div className="text-primary">
-                <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5-10-5-10 5zM2 12l10 5 10-5-10-5-10 5z"/>
-                </svg>
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">e-Gram Panchayat</h1>
-            </div>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" to="/">
-                Home
-              </Link>
-              <Link className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" to="/schemes">
-                Schemes
-              </Link>
-              <Link className="text-sm font-bold text-primary" to="/services">
-                Services
-              </Link>
-              <Link className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" to="/announcements">
-                Announcements
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
-
       <div className="flex flex-1">
         {/* Sidebar Filters */}
         <aside className="w-80 border-r border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-900">
@@ -190,7 +159,7 @@ const ServicesPage = () => {
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="container mx-auto px-6 py-8">
-            {/* Header */}
+            {/* Page Header */}
             <header>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Digital Services</h1>
               <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
@@ -267,34 +236,32 @@ const ServicesPage = () => {
             <div className="mt-12">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Browse by Category</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {categories.filter(cat => cat.value !== 'all').map((category, index) => {
-                  const IconComponent = category.icon;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => setFilterCategory(category.value)}
-                      className={`group block p-4 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border text-center ${
-                        filterCategory === category.value
-                          ? 'bg-primary text-white border-primary'
-                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
-                      }`}
-                    >
-                      <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-3 ${
-                        filterCategory === category.value
-                          ? 'bg-white/20'
-                          : 'bg-primary/10 text-primary'
-                      }`}>
-                        <IconComponent className="w-6 h-6" />
-                      </div>
-                      <h3 className="text-sm font-semibold">
-                        {category.name}
-                      </h3>
-                      <p className="text-xs opacity-75 mt-1">
-                        {category.count} Services
-                      </p>
-                    </button>
-                  );
-                })}
+                {categories
+                  .filter((cat) => cat.value !== 'all')
+                  .map((category, index) => {
+                    const IconComponent = category.icon;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setFilterCategory(category.value)}
+                        className={`group block p-4 rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border text-center ${
+                          filterCategory === category.value
+                            ? 'bg-primary text-white border-primary'
+                            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
+                        }`}
+                      >
+                        <div
+                          className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-3 ${
+                            filterCategory === category.value ? 'bg-white/20' : 'bg-primary/10 text-primary'
+                          }`}
+                        >
+                          <IconComponent className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-sm font-semibold">{category.name}</h3>
+                        <p className="text-xs opacity-75 mt-1">{category.count} Services</p>
+                      </button>
+                    );
+                  })}
               </div>
             </div>
           </div>

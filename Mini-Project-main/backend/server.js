@@ -19,6 +19,8 @@ import servicesRouter from './routes/services.js';
 import announcementsRouter from './routes/announcements.js';
 import adminRouter from './routes/admin.js';
 import usersRouter from './routes/users.js';
+import publicSchemesRouter from './routes/publicSchemes.js';
+
 
 const app = express();
 
@@ -102,6 +104,7 @@ app.use('/api/grievances', grievancesRouter);
 app.use('/api/admin/schemes', schemesRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/announcements', announcementsRouter);
+app.use('/api/schemes', publicSchemesRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/users', usersRouter);
 
